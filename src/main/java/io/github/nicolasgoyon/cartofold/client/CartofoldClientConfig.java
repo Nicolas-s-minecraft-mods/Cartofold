@@ -50,6 +50,7 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.EnumValue<MinimapLayout.Corner> MINIMAP_CORNER;
     public static final ModConfigSpec.IntValue MINIMAP_SIZE;
     public static final ModConfigSpec.IntValue MINIMAP_ZOOM;
+    public static final ModConfigSpec.BooleanValue MINIMAP_SPEED_ZOOM;
     public static final ModConfigSpec.BooleanValue MINIMAP_ROTATE;
     public static final ModConfigSpec.BooleanValue MINIMAP_COORDINATES;
     public static final ModConfigSpec.BooleanValue MINIMAP_WAYPOINTS;
@@ -85,6 +86,8 @@ public final class CartofoldClientConfig {
         MINIMAP_ZOOM = builder.comment("The zoom level of the minimap, from 0 (far) to 4 (near).")
                 .translation("cartofold.configuration.minimap.zoom")
                 .defineInRange("zoom", 2, 0, MinimapLayout.zoomLevels() - 1);
+        MINIMAP_SPEED_ZOOM = builder.comment("Zoom out the minimap when you go faster, also in a vehicle.")
+                .translation("cartofold.configuration.minimap.speed_zoom").define("speedZoom", true);
         MINIMAP_ROTATE = builder.comment("Turn the minimap with the player. If false, the north is at the top.")
                 .translation("cartofold.configuration.minimap.rotate").define("rotate", false);
         MINIMAP_COORDINATES = builder.comment("Show the coordinates of the player under the minimap.")

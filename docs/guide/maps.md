@@ -8,6 +8,7 @@ The minimap shows the map around you, the north, your arrow and your coordinates
 
 - Press **Y** to show or hide it.
 - Press **[** to zoom out and **]** to zoom in. The minimap has five zoom levels.
+- The minimap zooms out when you go faster, also in a vehicle. It has five levels of speed: stopped, walk, sprint, a little faster (a horse, a boat on water) and very fast (an elytra, a boat on ice). The zoom level is the zoom when you stop. The setting `speedZoom` stops this.
 
 The [settings](settings.md) select the shape, the corner of the screen and the size. The minimap can also turn with you.
 

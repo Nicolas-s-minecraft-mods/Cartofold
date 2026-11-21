@@ -25,6 +25,7 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `corner` | `TOP_LEFT` | The corner of the screen. |
 | `size` | 100 | The size in units of the screen, from 48 to 256. |
 | `zoom` | 2 | The zoom level, from 0 (far) to 4 (near). |
+| `speedZoom` | true | Zoom out the minimap when you go faster. The zoom level is then the zoom when you stop. |
 | `rotate` | false | Turn the minimap with you. |
 | `coordinates` | true | Show your coordinates. |
 | `waypoints` | true | Show the waypoints. |
