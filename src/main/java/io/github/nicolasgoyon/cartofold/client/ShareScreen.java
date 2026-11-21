@@ -17,8 +17,10 @@ import net.minecraft.network.chat.Component;
 public final class ShareScreen extends Screen {
     private static final int BUTTON_WIDTH = 200;
     private static final int ROW = 24;
-    /** The number of players on a page. */
-    private static final int PAGE = 8;
+    /** The top of the list of the players: the title and the help are above it. */
+    private static final int TOP = 44;
+    /** The largest number of players on a page. A small screen shows fewer players on a page. */
+    private static final int MAX_PAGE = 8;
 
     @Nullable
     private final Screen parent;
@@ -44,17 +46,18 @@ public final class ShareScreen extends Screen {
     @Override
     protected void init() {
         List<String> players = players();
-        int pages = Math.max(1, (players.size() + PAGE - 1) / PAGE);
+        int size = pageSize();
+        int pages = Math.max(1, (players.size() + size - 1) / size);
         page = Math.clamp(page, 0, pages - 1);
         int left = width / 2 - BUTTON_WIDTH / 2;
-        int top = height / 2 - ROW * (PAGE / 2 + 1);
-        List<String> shown = players.subList(page * PAGE, Math.min(players.size(), (page + 1) * PAGE));
+        int top = TOP;
+        List<String> shown = players.subList(page * size, Math.min(players.size(), (page + 1) * size));
         for (int i = 0; i < shown.size(); i++) {
             String name = shown.get(i);
             addRenderableWidget(Button.builder(Component.literal(name), button -> share(name))
                     .bounds(left, top + ROW * i, BUTTON_WIDTH, 20).build());
         }
-        int bottom = top + ROW * PAGE + 8;
+        int bottom = top + ROW * size + 8;
         int third = (BUTTON_WIDTH - 8) / 3;
         Button previous = addRenderableWidget(Button.builder(Component.literal("<"), button -> turn(-1))
                 .bounds(left, bottom, third, 20).build());
@@ -64,6 +67,11 @@ public final class ShareScreen extends Screen {
         Button next = addRenderableWidget(Button.builder(Component.literal(">"), button -> turn(1))
                 .bounds(left + (third + 4) * 2, bottom, third, 20).build());
         next.active = page < pages - 1;
+    }
+
+    /** The number of players on a page: the players that fit above the buttons at the bottom. */
+    private int pageSize() {
+        return Math.clamp((height - TOP - ROW - 16) / ROW, 1, MAX_PAGE);
     }
 
     private void turn(int step) {
@@ -81,12 +89,11 @@ public final class ShareScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        int top = height / 2 - ROW * (PAGE / 2 + 1);
-        graphics.drawCenteredString(font, title, width / 2, top - 30, 0xFFFFFFFF);
-        graphics.drawCenteredString(font, Component.translatable("cartofold.share.help"), width / 2, top - 16,
+        graphics.drawCenteredString(font, title, width / 2, TOP - 34, 0xFFFFFFFF);
+        graphics.drawCenteredString(font, Component.translatable("cartofold.share.help"), width / 2, TOP - 20,
                 0xFFA0A0A0);
         if (players().isEmpty()) {
-            graphics.drawCenteredString(font, Component.translatable("cartofold.share.nobody"), width / 2, top + 6,
+            graphics.drawCenteredString(font, Component.translatable("cartofold.share.nobody"), width / 2, TOP + 6,
                     0xFFFFFFFF);
         }
     }
