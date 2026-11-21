@@ -2,6 +2,8 @@
 
 The maps show only the places that you explored. The server records the chunks near you as you move.
 
+Your game keeps a copy of the map of each world in the folder `cartofold/cache` of the game. When you join the world again, the map comes from this copy at once. The server then sends only the places that changed.
+
 ## Minimap
 
 The minimap shows the map around you, the north, your arrow and your coordinates.

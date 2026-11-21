@@ -9,6 +9,7 @@ import io.github.nicolasgoyon.cartofold.data.ExplorationKey;
 import io.github.nicolasgoyon.cartofold.data.MapRegion;
 import io.github.nicolasgoyon.cartofold.data.RegionPos;
 import io.github.nicolasgoyon.cartofold.network.ExplorationChunksPayload;
+import io.github.nicolasgoyon.cartofold.network.ExplorationRequestPayload;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.registries.Registries;
@@ -73,5 +74,57 @@ class ClientExplorationTest {
         assertEquals(ClientExploration.MAX_REGIONS, store.size());
         assertTrue(store.region(OVERWORLD, oldest).isPresent(), "A region of the request stays");
         assertTrue(store.region(OVERWORLD, second).isEmpty(), "The oldest region out of the request goes out");
+    }
+
+    private static ExplorationChunksPayload chunk(int x, int z, int color, long sampled) {
+        ChunkColumns columns = ChunkColumns.empty();
+        columns.colors()[0] = (byte) color;
+        return new ExplorationChunksPayload(ExplorationKey.surface(OVERWORLD),
+                List.of(new ExplorationChunksPayload.Chunk(x, z, columns, sampled)));
+    }
+
+    /** The store keeps the time of the sample of the server, and tells the data that it has for a region. */
+    @Test
+    void knownGivesTheLastSampleAndTheChunks() {
+        ClientExploration store = new ClientExploration();
+        ExplorationKey key = ExplorationKey.surface(OVERWORLD);
+        store.accept(chunk(0, 0, 3, 500));
+        store.accept(chunk(1, 0, 3, 200));
+
+        assertEquals(new ExplorationRequestPayload.Known(500, 2), store.known(key, new RegionPos(0, 0)));
+        assertEquals(ExplorationRequestPayload.Known.NONE, store.known(key, new RegionPos(5, 5)));
+    }
+
+    /** A region of the cache does not replace a newer chunk of the server. */
+    @Test
+    void cachedRegionKeepsTheNewerChunks() {
+        ClientExploration store = new ClientExploration();
+        ExplorationKey key = ExplorationKey.surface(OVERWORLD);
+        store.accept(chunk(0, 0, 9, 800));
+        MapRegion cached = new MapRegion(new RegionPos(0, 0));
+        ChunkColumns old = ChunkColumns.empty();
+        old.colors()[0] = 4;
+        cached.put(0, 0, old, 100);
+        cached.put(1, 0, old, 100);
+
+        assertTrue(store.putCached(key, cached));
+
+        MapRegion region = store.region(key, new RegionPos(0, 0)).orElseThrow();
+        assertEquals(9, region.color(0, 0));
+        assertEquals(800, region.sampled(0, 0));
+        assertEquals(4, region.color(16, 0));
+    }
+
+    /** The changed regions go to the cache once, and a region with changes that goes out of the store goes too. */
+    @Test
+    void changedRegionsGoToTheCacheOnce() {
+        ClientExploration store = new ClientExploration();
+        List<RegionPos> saved = new java.util.ArrayList<>();
+        store.accept(chunk(0, 0, 3, 500));
+
+        store.takeUnsaved((key, region) -> saved.add(region.pos()));
+        store.takeUnsaved((key, region) -> saved.add(region.pos()));
+
+        assertEquals(List.of(new RegionPos(0, 0)), saved);
     }
 }

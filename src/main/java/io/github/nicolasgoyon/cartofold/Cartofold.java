@@ -42,6 +42,8 @@ public final class Cartofold {
         container.registerConfig(ModConfig.Type.CLIENT, CartofoldClientConfig.SPEC);
         container.registerConfig(ModConfig.Type.SERVER, CartofoldServerConfig.SPEC);
         modEventBus.addListener(ServerRules::onConfigReloading);
+        NeoForge.EVENT_BUS.addListener(ServerRules::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(ServerRules::onServerStopped);
         NeoForge.EVENT_BUS.addListener(ServerRules::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(MapShares::onRegisterCommands);
         NeoForge.EVENT_BUS.addListener(MapShares::onPlayerLoggedOut);

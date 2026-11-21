@@ -30,7 +30,7 @@ class ExplorationChunksPayloadTest {
     void chunksStayTheSameAfterTheCompression() {
         List<ExplorationChunksPayload.Chunk> chunks = List.of(
                 new ExplorationChunksPayload.Chunk(3, -4, columns(1)),
-                new ExplorationChunksPayload.Chunk(-100, 70, columns(9)));
+                new ExplorationChunksPayload.Chunk(-100, 70, columns(9), 123_456_789L));
 
         List<ExplorationChunksPayload.Chunk> read =
                 ExplorationChunksPayload.decompress(ExplorationChunksPayload.compress(chunks));
@@ -42,6 +42,7 @@ class ExplorationChunksPayloadTest {
             assertArrayEquals(chunks.get(i).columns().colors(), read.get(i).columns().colors());
             assertArrayEquals(chunks.get(i).columns().heights(), read.get(i).columns().heights());
             assertArrayEquals(chunks.get(i).columns().depths(), read.get(i).columns().depths());
+            assertEquals(chunks.get(i).sampled(), read.get(i).sampled());
         }
     }
 
