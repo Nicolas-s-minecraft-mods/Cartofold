@@ -149,6 +149,7 @@ public final class WorldMapScreen extends Screen {
                 layer -> true, mouseX, mouseY).map(LayerRenderer.Hit::key).orElse(null),
                 selected == null ? Set.of() : Set.of(selected));
         MapView.render(graphics, key, projection, MapViewKind.WORLD_MAP, layer -> true, labels);
+        EntityMarkers.render(graphics, dimension, projection, partialTick, labels);
         if (CartofoldClientConfig.WORLD_MAP_WAYPOINTS.get()) {
             WaypointMarkers.renderWorldMap(graphics, dimension, projection,
                     CartofoldClientConfig.WORLD_MAP_WAYPOINT_NAMES.get() ? labels : null, mouseX, mouseY);

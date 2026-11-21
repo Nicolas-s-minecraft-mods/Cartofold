@@ -65,3 +65,27 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `names` | true | Show the names. |
 | `distances` | true | Show the distances. |
 | `hiddenLayers` | empty | The identifiers of the layers that do not show in the world. |
+
+### Entities
+
+The section `entities` selects the loaded entities on the minimap and on the map of the world. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `players` | true | Show the other players, as white dots. The map of the world shows their names. A player that sneaks hides its name. |
+| `hostile` | true | Show the hostile mobs, as red dots. |
+| `passive` | true | Show the animals, the villagers and the other passive mobs, as green dots. |
+| `objects` | false | Show the items on the ground, the boats and the minecarts, as yellow dots. |
+
+## Settings of the server
+
+The file of the server is `serverconfig/cartofold-server.toml`, in the folder of the world. A change of the file goes to the players at once.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `entities.players` | true | Let the maps of the players show the other players. |
+| `entities.hostile` | true | Let the maps of the players show the hostile mobs. |
+| `entities.passive` | true | Let the maps of the players show the animals and the passive mobs. |
+| `entities.objects` | true | Let the maps of the players show the items and the vehicles. |
+
+A setting at false hides this kind of entity on the maps of all the players, for a fair game. A changed client can still see the entities near its player.

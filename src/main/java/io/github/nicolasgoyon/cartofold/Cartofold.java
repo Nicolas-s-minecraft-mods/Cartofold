@@ -13,6 +13,7 @@ import io.github.nicolasgoyon.cartofold.paper.SurveyMapSync;
 import io.github.nicolasgoyon.cartofold.server.BannerService;
 import io.github.nicolasgoyon.cartofold.server.ExplorationService;
 import io.github.nicolasgoyon.cartofold.server.LayerService;
+import io.github.nicolasgoyon.cartofold.server.ServerRules;
 import io.github.nicolasgoyon.cartofold.server.WaypointService;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
@@ -38,6 +39,9 @@ public final class Cartofold {
 
     public Cartofold(IEventBus modEventBus, ModContainer container) {
         container.registerConfig(ModConfig.Type.CLIENT, CartofoldClientConfig.SPEC);
+        container.registerConfig(ModConfig.Type.SERVER, CartofoldServerConfig.SPEC);
+        modEventBus.addListener(ServerRules::onConfigReloading);
+        NeoForge.EVENT_BUS.addListener(ServerRules::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(ExplorationService::onServerStarted);
         NeoForge.EVENT_BUS.addListener(ExplorationService::onServerStopping);
         NeoForge.EVENT_BUS.addListener(ExplorationService::onLevelSave);

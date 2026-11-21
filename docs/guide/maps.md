@@ -12,6 +12,10 @@ The minimap shows the map around you, the north, your arrow and your coordinates
 
 The [settings](settings.md) select the shape, the corner of the screen and the size. The minimap can also turn with you.
 
+## Entities
+
+The minimap and the map of the world show the loaded entities near you as dots: the players in white, the hostile mobs in red, the animals and the passive mobs in green, and the items and the vehicles in yellow. The [settings](settings.md#entities) select the kinds. A server can stop each kind (see the [settings of the server](settings.md#settings-of-the-server)).
+
 ## Map of the world
 
 Press **M** to open the map of the world.

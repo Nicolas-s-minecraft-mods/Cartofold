@@ -1,10 +1,13 @@
 package io.github.nicolasgoyon.cartofold.client;
 
 import io.github.nicolasgoyon.cartofold.api.MapViewKind;
+import io.github.nicolasgoyon.cartofold.view.EntityKind;
 import io.github.nicolasgoyon.cartofold.view.MarkerSizes;
 import io.github.nicolasgoyon.cartofold.view.MinimapLayout;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
@@ -60,6 +63,8 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_LAYERS;
     public static final ModConfigSpec.EnumValue<BannerViews> BANNER_VIEWS;
     public static final ModConfigSpec.DoubleValue MARKER_SCALE;
+    /** For each kind of entity: true if the minimap and the map of the world show it. */
+    public static final Map<EntityKind, ModConfigSpec.BooleanValue> ENTITIES = new EnumMap<>(EntityKind.class);
     public static final ModConfigSpec.BooleanValue HUD;
     public static final ModConfigSpec.BooleanValue HUD_WAYPOINTS;
     public static final ModConfigSpec.IntValue HUD_MIN_DISTANCE;
@@ -140,6 +145,14 @@ public final class CartofoldClientConfig {
         HUD_HIDDEN_LAYERS = builder.comment("The identifiers of the layers that do not show in the world.")
                 .translation("cartofold.configuration.hud.hidden_layers")
                 .defineListAllowEmpty("hiddenLayers", List.of(), () -> "", value -> value instanceof String);
+        builder.pop();
+        builder.comment("The loaded entities on the minimap and on the map of the world. The server can stop them.")
+                .translation("cartofold.configuration.entities").push("entities");
+        for (EntityKind kind : EntityKind.values()) {
+            ENTITIES.put(kind, builder.comment("Show the " + kind.key() + ".")
+                    .translation("cartofold.configuration.entities." + kind.key())
+                    .define(kind.key(), kind != EntityKind.OBJECTS));
+        }
         builder.pop();
         SPEC = builder.build();
     }
