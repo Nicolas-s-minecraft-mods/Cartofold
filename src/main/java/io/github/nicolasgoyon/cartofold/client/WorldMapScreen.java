@@ -122,6 +122,9 @@ public final class WorldMapScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("cartofold.worldmap.layers"),
                 button -> minecraft.setScreen(new LayersScreen(this)))
                 .bounds(width - SETTINGS_WIDTH * 2 - 10, 4, SETTINGS_WIDTH, 20).build());
+        addRenderableWidget(Button.builder(Component.translatable("cartofold.worldmap.share"),
+                button -> minecraft.setScreen(new ShareScreen(this)))
+                .bounds(width - SETTINGS_WIDTH * 3 - 14, 4, SETTINGS_WIDTH, 20).build());
         sliceButton = addRenderableWidget(Button.builder(MapSlices.label(slice), button -> showSlice(
                 slice.surface() ? nextBand(0) : MapSlice.SURFACE))
                 .bounds(6, 4, SLICE_WIDTH, 20).build());

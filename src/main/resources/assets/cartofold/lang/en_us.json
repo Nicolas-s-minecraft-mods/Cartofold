@@ -169,5 +169,20 @@
   "cartofold.configuration.server.entities.objects": "Items and vehicles",
   "cartofold.configuration.server.entities.objects.tooltip": "Let the maps of the players show the items on the ground and the vehicles.",
   "cartofold.configuration.entities.height": "Height range",
-  "cartofold.configuration.entities.height.tooltip": "Show only the entities at most this number of blocks above or below you. 0 shows the entities at all heights."
+  "cartofold.configuration.entities.height.tooltip": "Show only the entities at most this number of blocks above or below you. 0 shows the entities at all heights.",
+  "cartofold.worldmap.share": "Share",
+  "cartofold.share.title": "Share your map",
+  "cartofold.share.help": "The player gets the places that you explored, if they accept.",
+  "cartofold.share.nobody": "No other player is on the server.",
+  "cartofold.share.offer": "%s wants to share their map with you.",
+  "cartofold.share.accept": "Accept",
+  "cartofold.share.refuse": "Refuse",
+  "cartofold.share.sent": "You offered your map to %s.",
+  "cartofold.share.self": "You cannot share your map with yourself.",
+  "cartofold.share.limit": "Too many offers. Wait one minute.",
+  "cartofold.share.none": "No offer of %s, or the offer expired.",
+  "cartofold.share.copying": "You get the map of %s...",
+  "cartofold.share.done": "Your map has %s new chunks from the map of %s.",
+  "cartofold.share.accepted": "%s accepted your map.",
+  "cartofold.share.refused": "%s refused your map."
 }

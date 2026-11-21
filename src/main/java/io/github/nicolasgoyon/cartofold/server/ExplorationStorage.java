@@ -12,8 +12,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -61,6 +64,21 @@ public final class ExplorationStorage {
     /** The file of the explored columns of a region for a player. */
     Path maskFile(ExplorationKey key, UUID player, RegionPos pos) {
         return folder(key).resolve("players").resolve(player.toString()).resolve(pos.fileName());
+    }
+
+    /** The regions of the files of the masks of a player in a slice. An error of the disk gives no region. */
+    public List<RegionPos> maskRegions(ExplorationKey key, UUID player) {
+        Path folder = folder(key).resolve("players").resolve(player.toString());
+        List<RegionPos> regions = new ArrayList<>();
+        if (!Files.isDirectory(folder)) {
+            return regions;
+        }
+        try (Stream<Path> files = Files.list(folder)) {
+            files.forEach(file -> RegionPos.fromFileName(file.getFileName().toString()).ifPresent(regions::add));
+        } catch (IOException e) {
+            Cartofold.LOGGER.warn("The masks of {} in {} cannot be listed", player, key, e);
+        }
+        return regions;
     }
 
     /**

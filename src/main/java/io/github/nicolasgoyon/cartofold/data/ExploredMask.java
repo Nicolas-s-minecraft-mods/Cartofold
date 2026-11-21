@@ -5,8 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * The explored columns of a region for one player: one bit for each block column of the region. The map of the
@@ -75,6 +78,36 @@ public final class ExploredMask {
             }
         }
         return true;
+    }
+
+    /**
+     * Adds the explored columns of another mask of the same region to this mask.
+     *
+     * @return the chunks that were not explored in this mask and that are explored now
+     */
+    public List<ChunkPos> merge(ExploredMask other) {
+        if (!other.pos.equals(pos)) {
+            throw new IllegalArgumentException("The mask of " + other.pos + " is not a mask of " + pos);
+        }
+        List<ChunkPos> added = new ArrayList<>();
+        int firstX = pos.minBlockX() >> 4;
+        int firstZ = pos.minBlockZ() >> 4;
+        int chunks = MapRegion.SIZE / 16;
+        for (int z = firstZ; z < firstZ + chunks; z++) {
+            for (int x = firstX; x < firstX + chunks; x++) {
+                if (other.isChunkExplored(x, z) && !isChunkExplored(x, z)) {
+                    added.add(new ChunkPos(x, z));
+                }
+            }
+        }
+        for (int i = 0; i < bits.length; i++) {
+            long word = bits[i] | other.bits[i];
+            if (word != bits[i]) {
+                bits[i] = word;
+                dirty = true;
+            }
+        }
+        return added;
     }
 
     /** The number of explored columns. */

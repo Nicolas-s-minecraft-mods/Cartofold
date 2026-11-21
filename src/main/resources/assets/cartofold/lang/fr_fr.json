@@ -169,5 +169,20 @@
   "cartofold.configuration.server.entities.objects": "Objets et véhicules",
   "cartofold.configuration.server.entities.objects.tooltip": "Laisser les cartes des joueurs afficher les objets au sol et les véhicules.",
   "cartofold.configuration.entities.height": "Écart de hauteur",
-  "cartofold.configuration.entities.height.tooltip": "Afficher seulement les entités à cette distance au plus au-dessus ou au-dessous de vous, en blocs. 0 affiche les entités à toutes les hauteurs."
+  "cartofold.configuration.entities.height.tooltip": "Afficher seulement les entités à cette distance au plus au-dessus ou au-dessous de vous, en blocs. 0 affiche les entités à toutes les hauteurs.",
+  "cartofold.worldmap.share": "Partager",
+  "cartofold.share.title": "Partager votre carte",
+  "cartofold.share.help": "Le joueur reçoit les lieux que vous avez explorés, s'il accepte.",
+  "cartofold.share.nobody": "Aucun autre joueur n'est sur le serveur.",
+  "cartofold.share.offer": "%s veut partager sa carte avec vous.",
+  "cartofold.share.accept": "Accepter",
+  "cartofold.share.refuse": "Refuser",
+  "cartofold.share.sent": "Vous avez proposé votre carte à %s.",
+  "cartofold.share.self": "Vous ne pouvez pas partager votre carte avec vous-même.",
+  "cartofold.share.limit": "Trop de propositions. Attendez une minute.",
+  "cartofold.share.none": "Aucune proposition de %s, ou la proposition a expiré.",
+  "cartofold.share.copying": "Vous recevez la carte de %s...",
+  "cartofold.share.done": "Votre carte a %s nouveaux chunks de la carte de %s.",
+  "cartofold.share.accepted": "%s a accepté votre carte.",
+  "cartofold.share.refused": "%s a refusé votre carte."
 }

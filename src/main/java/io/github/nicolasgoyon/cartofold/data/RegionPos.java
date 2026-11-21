@@ -1,5 +1,9 @@
 package io.github.nicolasgoyon.cartofold.data;
 
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * The position of a region of the exploration data: a square of {@link MapRegion#SIZE} x {@link MapRegion#SIZE}
  * blocks.
@@ -32,4 +36,19 @@ public record RegionPos(int x, int z) {
     public String fileName() {
         return "r." + x + "." + z + ".dat";
     }
+
+    /** The region of a name of a file (see {@link #fileName}), or empty for another name. */
+    public static Optional<RegionPos> fromFileName(String name) {
+        Matcher matcher = FILE_NAME.matcher(name);
+        if (!matcher.matches()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(new RegionPos(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2))));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static final Pattern FILE_NAME = Pattern.compile("r\\.(-?\\d+)\\.(-?\\d+)\\.dat");
 }

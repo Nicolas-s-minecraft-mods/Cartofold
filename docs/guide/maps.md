@@ -29,10 +29,20 @@ Press **M** to open the map of the world.
 | Click a marker of a layer | Left click |
 | Select the surface or the caves | Button at the top left, Page Up, Page Down, Home |
 | Show or hide the layers | Button **Layers** |
+| Share your map with a player | Button **Share** |
 | Open the settings | Button **Settings** |
 | Close the map | Escape, or **M** |
 
 The map follows you until you move it. It shows the coordinates under the mouse at the bottom left.
+
+### Share your map
+
+The button **Share** shows the other players on the server. Click a player to offer your map to this player. The player gets a message with two buttons: **Accept** and **Refuse**.
+
+- When the player accepts, the places that you explored go to the map of this player: the surface and the caves, in all the dimensions. The map of the player keeps its own places. Your map does not change.
+- The copy is a copy of this time: the places that you explore later do not go to the other player.
+- An offer expires after 5 minutes, or when one of the two players leaves. You can send 5 offers each minute.
+- The commands `/cartofold share <player>`, `/cartofold share accept <player>` and `/cartofold share refuse <player>` do the same.
 
 ### Names of the markers
 
