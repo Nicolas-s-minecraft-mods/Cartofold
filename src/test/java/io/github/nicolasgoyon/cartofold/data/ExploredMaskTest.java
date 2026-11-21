@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import net.minecraft.world.level.ChunkPos;
 import org.junit.jupiter.api.Test;
 
 class ExploredMaskTest {
@@ -68,5 +70,30 @@ class ExploredMaskTest {
         assertEquals(256, read.count());
         assertTrue(read.isChunkExplored(-5, -9));
         assertFalse(read.isDirty());
+    }
+
+    /** A merge adds the chunks of the other mask, keeps the chunks of this mask, and tells the new chunks. */
+    @Test
+    void mergeAddsTheNewChunks() {
+        ExploredMask mine = new ExploredMask(POS);
+        mine.markChunk(-1, -1);
+        mine.setSaved();
+        ExploredMask other = new ExploredMask(POS);
+        other.markChunk(-1, -1);
+        other.markChunk(-5, -9);
+
+        List<ChunkPos> added = mine.merge(other);
+
+        assertEquals(List.of(new ChunkPos(-5, -9)), added);
+        assertTrue(mine.isChunkExplored(-1, -1));
+        assertTrue(mine.isChunkExplored(-5, -9));
+        assertTrue(mine.isDirty());
+        assertEquals(List.of(), mine.merge(other));
+    }
+
+    @Test
+    void mergeOfAnotherRegionFails() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ExploredMask(POS).merge(new ExploredMask(new RegionPos(0, 0))));
     }
 }

@@ -120,7 +120,7 @@ public final class WaypointService {
         }
         boolean death = waypoints.stream().anyMatch(old -> old.id().equals(waypoint.id()) && old.death());
         update(player, Waypoints.set(waypoints, new Waypoint(waypoint.id(), waypoint.name(), waypoint.color(),
-                waypoint.dimension(), waypoint.pos(), death)));
+                waypoint.dimension(), waypoint.pos(), death, waypoint.minDistance(), waypoint.maxDistance())));
     }
 
     /** The waypoints of a player, from the memory or from the disk. */

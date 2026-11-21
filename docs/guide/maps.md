@@ -2,14 +2,21 @@
 
 The maps show only the places that you explored. The server records the chunks near you as you move.
 
+Your game keeps a copy of the map of each world in the folder `cartofold/cache` of the game. When you join the world again, the map comes from this copy at once. The server then sends only the places that changed.
+
 ## Minimap
 
 The minimap shows the map around you, the north, your arrow and your coordinates.
 
 - Press **Y** to show or hide it.
 - Press **[** to zoom out and **]** to zoom in. The minimap has five zoom levels.
+- The minimap zooms out when you go faster, also in a vehicle. It has five levels of speed: stopped, walk, sprint, a little faster (a horse, a boat on water) and very fast (an elytra, a boat on ice). The zoom level is the zoom when you stop. The setting `speedZoom` stops this.
 
 The [settings](settings.md) select the shape, the corner of the screen and the size. The minimap can also turn with you.
+
+## Entities
+
+The minimap and the map of the world show the loaded entities near you as dots: the players in white, the hostile mobs in red, the animals and the passive mobs in green, and the items and the vehicles in yellow. The [settings](settings.md#entities) select the kinds. A server can stop each kind (see the [settings of the server](settings.md#settings-of-the-server)).
 
 ## Map of the world
 
@@ -24,10 +31,20 @@ Press **M** to open the map of the world.
 | Click a marker of a layer | Left click |
 | Select the surface or the caves | Button at the top left, Page Up, Page Down, Home |
 | Show or hide the layers | Button **Layers** |
+| Share your map with a player | Button **Share** |
 | Open the settings | Button **Settings** |
 | Close the map | Escape, or **M** |
 
 The map follows you until you move it. It shows the coordinates under the mouse at the bottom left.
+
+### Share your map
+
+The button **Share** shows the other players on the server. Click a player to offer your map to this player. The player gets a message with two buttons: **Accept** and **Refuse**.
+
+- When the player accepts, the places that you explored go to the map of this player: the surface and the caves, in all the dimensions. The map of the player keeps its own places. Your map does not change.
+- The copy is a copy of this time: the places that you explore later do not go to the other player.
+- An offer expires after 5 minutes, or when one of the two players leaves. You can send 5 offers each minute.
+- The commands `/cartofold share <player>`, `/cartofold share accept <player>` and `/cartofold share refuse <player>` do the same.
 
 ### Names of the markers
 

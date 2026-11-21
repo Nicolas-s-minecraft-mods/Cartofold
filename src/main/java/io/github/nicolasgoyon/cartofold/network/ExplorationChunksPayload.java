@@ -38,8 +38,15 @@ public record ExplorationChunksPayload(ExplorationKey key, List<Chunk> chunks)
      * @param x       the X of the chunk
      * @param z       the Z of the chunk
      * @param columns the columns of the chunk
+     * @param sampled the game time of the sample of the chunk on the server. The cache of the client keeps it: the
+     *                next request tells the server the last sample that the client has (see
+     *                {@link ExplorationRequestPayload.Known}).
      */
-    public record Chunk(int x, int z, ChunkColumns columns) {
+    public record Chunk(int x, int z, ChunkColumns columns, long sampled) {
+        /** A chunk with a sample at the time 0. */
+        public Chunk(int x, int z, ChunkColumns columns) {
+            this(x, z, columns, 0);
+        }
     }
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ExplorationChunksPayload> STREAM_CODEC =
@@ -75,6 +82,7 @@ public record ExplorationChunksPayload(ExplorationKey key, List<Chunk> chunks)
                     out.writeShort(height);
                 }
                 out.write(chunk.columns().depths());
+                out.writeLong(chunk.sampled());
             }
         } catch (IOException e) {
             throw new IllegalStateException("A memory stream does not fail", e);
@@ -99,7 +107,7 @@ public record ExplorationChunksPayload(ExplorationKey key, List<Chunk> chunks)
                     columns.heights()[c] = in.readShort();
                 }
                 in.readFully(columns.depths());
-                chunks.add(new Chunk(x, z, columns));
+                chunks.add(new Chunk(x, z, columns, in.readLong()));
             }
             return chunks;
         } catch (IOException e) {

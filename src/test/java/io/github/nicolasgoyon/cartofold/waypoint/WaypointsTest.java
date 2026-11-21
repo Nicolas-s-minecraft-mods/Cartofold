@@ -87,4 +87,44 @@ class WaypointsTest {
         assertTrue(!list.contains(deaths.get(0)));
         assertTrue(list.contains(deaths.get(Waypoints.MAX_DEATHS)));
     }
+
+    /** A distance under 0 follows the settings, and a distance over the limit goes to the limit. */
+    @Test
+    void distancesStayInTheirRange() {
+        Waypoint waypoint = waypoint("Home", false).withDistances(-7, 1_000_000);
+
+        assertEquals(Waypoint.DEFAULT, waypoint.minDistance());
+        assertEquals(Waypoint.MAX_DISTANCE, waypoint.maxDistance());
+    }
+
+    @Test
+    void defaultDistanceIsTheDistanceOfTheSettings() {
+        Waypoint waypoint = waypoint("Home", false).withDistances(Waypoint.DEFAULT, 300);
+
+        assertEquals(50, waypoint.minDistance(50));
+        assertEquals(300, waypoint.maxDistance(1000));
+    }
+
+    /** A waypoint saved before the distances follows the settings. */
+    @Test
+    void oldWaypointHasTheDefaultDistances() {
+        JsonElement json = Waypoint.CODEC.encodeStart(JsonOps.INSTANCE, waypoint("Home", false)).getOrThrow();
+        json.getAsJsonObject().remove("minDistance");
+        json.getAsJsonObject().remove("maxDistance");
+
+        Waypoint read = Waypoint.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow();
+
+        assertEquals(Waypoint.DEFAULT, read.minDistance());
+        assertEquals(Waypoint.DEFAULT, read.maxDistance());
+    }
+
+    @Test
+    void distancesGoThroughTheNetwork() {
+        Waypoint waypoint = waypoint("Home", true).withDistances(0, 250);
+        ByteBuf buffer = Unpooled.buffer();
+
+        Waypoint.STREAM_CODEC.encode(buffer, waypoint);
+
+        assertEquals(waypoint, Waypoint.STREAM_CODEC.decode(buffer));
+    }
 }

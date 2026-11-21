@@ -89,4 +89,18 @@ class ExplorationStorageTest {
             assertEquals(2, files.count());
         }
     }
+
+    /** The list of the masks of a player gives the regions of its files, and skips the other files. */
+    @Test
+    void maskRegionsGivesTheFilesOfAPlayer(@TempDir Path root) throws IOException {
+        ExplorationStorage storage = new ExplorationStorage(root);
+        ExplorationKey key = ExplorationKey.surface(Level.OVERWORLD);
+        ExploredMask mask = new ExploredMask(POS);
+        mask.markChunk(0, -1);
+        ExplorationStorage.write(storage.maskFile(key, PLAYER, POS), ExplorationStorage.bytes(mask));
+        Files.write(storage.maskFile(key, PLAYER, POS).resolveSibling("notes.txt"), new byte[] {1});
+
+        assertEquals(java.util.List.of(POS), storage.maskRegions(key, PLAYER));
+        assertEquals(java.util.List.of(), storage.maskRegions(key, UUID.randomUUID()));
+    }
 }

@@ -131,6 +131,9 @@ public final class ExplorationRequests {
         if (player == null || connection == null || !connection.hasChannel(ExplorationRequestPayload.TYPE)) {
             return;
         }
+        if (ClientMapCache.waiting()) {
+            return;
+        }
         ResourceKey<Level> dimension = player.level().dimension();
         List<RegionPos> near = regionsNear(player.getBlockX(), player.getBlockZ());
         List<ExplorationRequestPayload.SliceRegions> slices = new ArrayList<>();
@@ -146,12 +149,39 @@ public final class ExplorationRequests {
         }
         boolean all = VIEWS.values().stream().anyMatch(view -> view.all() && view.key().dimension().equals(dimension));
         if (!dimension.equals(lastDimension) || !slices.equals(lastSlices) || all != lastAll) {
+            // The regions of the cache come first: the request then tells the server the data that the client has.
+            boolean ready = true;
+            for (Map.Entry<ExplorationKey, List<RegionPos>> entry : requested.entrySet()) {
+                for (RegionPos pos : entry.getValue()) {
+                    ready &= ClientMapCache.ensure(entry.getKey(), pos);
+                }
+            }
+            if (!ready) {
+                // The next tick checks again: the reads of the cache are short.
+                ticks--;
+                return;
+            }
             lastDimension = dimension;
             lastSlices = slices;
             lastAll = all;
-            PacketDistributor.sendToServer(new ExplorationRequestPayload(dimension, slices, all));
+            PacketDistributor.sendToServer(new ExplorationRequestPayload(dimension, withKnown(dimension, slices), all));
             ClientExploration.get().retain(requested);
         }
+    }
+
+    /** The regions of each slice, with the data that the client has for each region. */
+    private static List<ExplorationRequestPayload.SliceRegions> withKnown(ResourceKey<Level> dimension,
+            List<ExplorationRequestPayload.SliceRegions> slices) {
+        List<ExplorationRequestPayload.SliceRegions> result = new ArrayList<>();
+        for (ExplorationRequestPayload.SliceRegions slice : slices) {
+            ExplorationKey key = new ExplorationKey(dimension, slice.slice());
+            List<ExplorationRequestPayload.Known> known = new ArrayList<>();
+            for (RegionPos pos : slice.regions()) {
+                known.add(ClientExploration.get().known(key, pos));
+            }
+            result.add(new ExplorationRequestPayload.SliceRegions(slice.slice(), slice.regions(), known));
+        }
+        return result;
     }
 
     @SubscribeEvent
@@ -160,6 +190,8 @@ public final class ExplorationRequests {
         lastSlices = List.of();
         lastAll = false;
         VIEWS.clear();
+        // The cache writes the changed regions before the store forgets them.
+        ClientMapCache.close();
         ClientExploration.get().clear();
         ClientWaypoints.get().set(List.of());
         ClientLayers.get().clear();

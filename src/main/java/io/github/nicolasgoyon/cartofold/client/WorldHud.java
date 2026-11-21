@@ -63,9 +63,14 @@ public final class WorldHud {
     private WorldHud() {
     }
 
-    /** A marker to draw: a waypoint or a marker of a layer. */
+    /**
+     * A marker to draw: a waypoint or a marker of a layer, with its distance limits.
+     *
+     * @param minDistance the marker hides when it is nearer than this distance, in blocks
+     * @param maxDistance the marker hides when it is farther than this distance, in blocks, or 0 for no limit
+     */
     private record Marker(Component name, int color, @Nullable ResourceLocation icon, boolean tinted,
-            boolean death) {
+            boolean death, int minDistance, int maxDistance) {
     }
 
     /** A marker on the screen, with its matrix and its text lines. */
@@ -92,7 +97,7 @@ public final class WorldHud {
             return;
         }
         List<HudLayout.Point<Marker>> points = HudLayout.select(points(minecraft.level.dimension()),
-                CartofoldClientConfig.HUD_MIN_DISTANCE.get(), CartofoldClientConfig.HUD_MAX_DISTANCE.get());
+                Marker::minDistance, Marker::maxDistance);
         List<Placed> placed = place(graphics, points);
         if (placed.isEmpty()) {
             return;
@@ -212,10 +217,12 @@ public final class WorldHud {
     /** The points of the waypoints and of the markers of a dimension, with their distance to the camera. */
     private static List<HudLayout.Point<Marker>> points(ResourceKey<Level> dimension) {
         List<HudLayout.Point<Marker>> points = new ArrayList<>();
+        int min = CartofoldClientConfig.HUD_MIN_DISTANCE.get();
+        int max = CartofoldClientConfig.HUD_MAX_DISTANCE.get();
         if (CartofoldClientConfig.HUD_WAYPOINTS.get()) {
             for (Waypoint waypoint : ClientWaypoints.get().in(dimension)) {
                 points.add(point(new Marker(WaypointMarkers.name(waypoint), waypoint.color(), null, false,
-                        waypoint.death()), waypoint.pos()));
+                        waypoint.death(), waypoint.minDistance(min), waypoint.maxDistance(max)), waypoint.pos()));
             }
         }
         List<? extends String> hidden = CartofoldClientConfig.HUD_HIDDEN_LAYERS.get();
@@ -228,7 +235,7 @@ public final class WorldHud {
             for (MapMarker marker : content.markers()) {
                 if (marker.dimension().equals(dimension) && explored.test(marker.pos())) {
                     points.add(point(new Marker(marker.name(), marker.color(), marker.icon().orElse(null),
-                            marker.tinted(), false), marker.pos()));
+                            marker.tinted(), false, min, max), marker.pos()));
                 }
             }
         }

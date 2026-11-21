@@ -11,16 +11,20 @@ import io.github.nicolasgoyon.cartofold.network.ExplorationChunksPayload;
 import io.github.nicolasgoyon.cartofold.network.ExplorationRequestPayload;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -85,6 +89,8 @@ public final class ExplorationService {
     public static final long UNLOAD_TICKS = 20L * 60L * 5L;
     /** The server applies one request of the regions of a player every this number of ticks at most. */
     public static final int REQUEST_TICKS = 10;
+    /** The largest number of regions that the copies of the explored chunks read each tick (see {@link #share}). */
+    public static final int SHARE_REGIONS_PER_TICK = 4;
 
     @Nullable
     private static ExplorationService instance;
@@ -93,6 +99,8 @@ public final class ExplorationService {
     private final ExplorationStorage storage;
     private final Map<ExplorationKey, LevelData> levels = new HashMap<>();
     private final ExplorationSync sync = new ExplorationSync(this);
+    /** The copies of explored chunks between players, in their order (see {@link #share}). */
+    private final List<Share> shares = new ArrayList<>();
     /** The last request of each player that waits for {@link #applyRequests}. */
     private final Map<UUID, ExplorationRequestPayload> requests = new HashMap<>();
     /** The game time of the last applied request of each player. */
@@ -321,10 +329,82 @@ public final class ExplorationService {
         data(key).queue.add(chunk);
     }
 
+    /** A copy of the explored chunks of a player to another player, region by region. */
+    private static final class Share {
+        final UUID from;
+        final UUID to;
+        final Deque<Map.Entry<ExplorationKey, RegionPos>> regions;
+        final IntConsumer done;
+        int chunks;
+
+        Share(UUID from, UUID to, Deque<Map.Entry<ExplorationKey, RegionPos>> regions, IntConsumer done) {
+            this.from = from;
+            this.to = to;
+            this.regions = regions;
+            this.done = done;
+        }
+    }
+
+    /**
+     * Starts to copy the explored chunks of a player to another player, in all the dimensions and all the slices. The
+     * copy adds chunks and never removes a chunk. It reads {@link #SHARE_REGIONS_PER_TICK} regions each tick.
+     *
+     * @param done runs on the server thread at the end, with the number of chunks that the other player got
+     */
+    public void share(UUID from, UUID to, IntConsumer done) {
+        Deque<Map.Entry<ExplorationKey, RegionPos>> regions = new ArrayDeque<>();
+        for (ServerLevel level : server.getAllLevels()) {
+            List<ExplorationKey> keys = new ArrayList<>();
+            keys.add(ExplorationKey.surface(level.dimension()));
+            for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y += MapSlice.HEIGHT) {
+                keys.add(new ExplorationKey(level.dimension(), MapSlice.caveAt(y)));
+            }
+            for (ExplorationKey key : keys) {
+                Set<RegionPos> positions = new LinkedHashSet<>(storage.maskRegions(key, from));
+                LevelData data = levels.get(key);
+                Map<RegionPos, Used<ExploredMask>> loaded = data == null ? null : data.masks.get(from);
+                if (loaded != null) {
+                    positions.addAll(loaded.keySet());
+                }
+                for (RegionPos pos : positions) {
+                    regions.add(Map.entry(key, pos));
+                }
+            }
+        }
+        shares.add(new Share(from, to, regions, done));
+    }
+
+    /** Copies the next regions of the shares. */
+    private void tickShares(long now) {
+        int budget = SHARE_REGIONS_PER_TICK;
+        Iterator<Share> iterator = shares.iterator();
+        while (budget > 0 && iterator.hasNext()) {
+            Share share = iterator.next();
+            Map.Entry<ExplorationKey, RegionPos> next;
+            while (budget > 0 && (next = share.regions.poll()) != null) {
+                budget--;
+                ExplorationKey key = next.getKey();
+                ExploredMask source = existingMask(key, share.from, next.getValue(), now);
+                if (source == null) {
+                    continue;
+                }
+                for (ChunkPos chunk : mask(key, share.to, next.getValue(), now).merge(source)) {
+                    sync.explored(share.to, key, chunk, now);
+                    share.chunks++;
+                }
+            }
+            if (share.regions.isEmpty()) {
+                iterator.remove();
+                share.done.accept(share.chunks);
+            }
+        }
+    }
+
     /** Reads the next chunks of the queues, then frees the regions and the masks with no recent use. */
     void tick() {
         int budget = SAMPLES_PER_TICK;
         long now = now();
+        tickShares(now);
         for (Map.Entry<ExplorationKey, LevelData> entry : levels.entrySet()) {
             ServerLevel level = server.getLevel(entry.getKey().dimension());
             Iterator<ChunkPos> queue = entry.getValue().queue.iterator();
