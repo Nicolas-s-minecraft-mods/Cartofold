@@ -169,7 +169,12 @@ public final class WorldMapScreen extends Screen {
         double[] block = projection.toBlock(mouseX, mouseY);
         graphics.drawString(font, Component.translatable("cartofold.worldmap.coordinates",
                 (int) Math.floor(block[0]), (int) Math.floor(block[1])), 6, height - font.lineHeight - 4, TEXT);
-        graphics.drawCenteredString(font, title, width / 2, 6, TEXT);
+        // On a narrow screen, the buttons take the top: the title shows only between them.
+        int free = width - SETTINGS_WIDTH * 2 - 10 - (6 + SLICE_WIDTH + 4 + SHARE_WIDTH) - 8;
+        if (font.width(title) <= free) {
+            graphics.drawCenteredString(font, title, (6 + SLICE_WIDTH + 4 + SHARE_WIDTH + width - SETTINGS_WIDTH * 2
+                    - 10) / 2, 6, TEXT);
+        }
         Component hint = Component.translatable("cartofold.worldmap.hint");
         graphics.drawString(font, hint, width - font.width(hint) - 6, height - font.lineHeight - 4, HINT);
         super.render(graphics, mouseX, mouseY, partialTick);
