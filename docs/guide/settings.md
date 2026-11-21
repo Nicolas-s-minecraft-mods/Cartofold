@@ -76,6 +76,7 @@ The section `entities` selects the loaded entities on the minimap and on the map
 | `hostile` | true | Show the hostile mobs, as red dots. |
 | `passive` | true | Show the animals, the villagers and the other passive mobs, as green dots. |
 | `objects` | false | Show the items on the ground, the boats and the minecarts, as yellow dots. |
+| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. |
 
 ## Settings of the server
 

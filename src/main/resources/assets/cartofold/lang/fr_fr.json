@@ -167,5 +167,7 @@
   "cartofold.configuration.server.entities.passive": "Animaux et créatures passives",
   "cartofold.configuration.server.entities.passive.tooltip": "Laisser les cartes des joueurs afficher les animaux et les créatures passives.",
   "cartofold.configuration.server.entities.objects": "Objets et véhicules",
-  "cartofold.configuration.server.entities.objects.tooltip": "Laisser les cartes des joueurs afficher les objets au sol et les véhicules."
+  "cartofold.configuration.server.entities.objects.tooltip": "Laisser les cartes des joueurs afficher les objets au sol et les véhicules.",
+  "cartofold.configuration.entities.height": "Écart de hauteur",
+  "cartofold.configuration.entities.height.tooltip": "Afficher seulement les entités à cette distance au plus au-dessus ou au-dessous de vous, en blocs. 0 affiche les entités à toutes les hauteurs."
 }

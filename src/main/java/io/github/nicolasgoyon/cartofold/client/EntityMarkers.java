@@ -59,6 +59,8 @@ public final class EntityMarkers {
             return;
         }
         float half = (float) (HALF * CartofoldClientConfig.MARKER_SCALE.get());
+        int height = CartofoldClientConfig.ENTITIES_HEIGHT.get();
+        double playerY = player.getY();
         Matrix4f matrix = graphics.pose().last().pose();
         BufferBuilder buffer = MapShapes.begin(VertexFormat.Mode.TRIANGLES);
         for (Entity entity : level.entitiesForRendering()) {
@@ -69,6 +71,10 @@ public final class EntityMarkers {
                 continue;
             }
             Vec3 position = entity.getPosition(partialTick);
+            // A mob in a cave under the player is not on the surface map, and the reverse.
+            if (height > 0 && Math.abs(position.y - playerY) > height) {
+                continue;
+            }
             double[] point = projection.toScreen(position.x, position.z);
             if (!projection.contains(point[0], point[1])) {
                 continue;

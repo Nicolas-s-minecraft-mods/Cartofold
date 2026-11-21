@@ -167,5 +167,7 @@
   "cartofold.configuration.server.entities.passive": "Animals and passive mobs",
   "cartofold.configuration.server.entities.passive.tooltip": "Let the maps of the players show the animals and the passive mobs.",
   "cartofold.configuration.server.entities.objects": "Items and vehicles",
-  "cartofold.configuration.server.entities.objects.tooltip": "Let the maps of the players show the items on the ground and the vehicles."
+  "cartofold.configuration.server.entities.objects.tooltip": "Let the maps of the players show the items on the ground and the vehicles.",
+  "cartofold.configuration.entities.height": "Height range",
+  "cartofold.configuration.entities.height.tooltip": "Show only the entities at most this number of blocks above or below you. 0 shows the entities at all heights."
 }
