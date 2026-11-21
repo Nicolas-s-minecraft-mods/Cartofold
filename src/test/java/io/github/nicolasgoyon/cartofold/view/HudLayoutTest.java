@@ -80,6 +80,20 @@ class HudLayoutTest {
         assertEquals(List.of("far", "middle", "next"), values);
     }
 
+    /** Each point can have its own limits: here, "always" has no limit and "near" hides only under 5 blocks. */
+    @Test
+    void selectUsesTheLimitsOfEachPoint() {
+        List<HudLayout.Point<String>> points = List.of(
+                HudLayout.Point.of("near", 10, 0, 0, 0, 0, 0),
+                HudLayout.Point.of("always", 5000, 0, 0, 0, 0, 0),
+                HudLayout.Point.of("too far", 2000, 0, 0, 0, 0, 0));
+
+        List<String> values = HudLayout.select(points, value -> value.equals("near") ? 5 : 50,
+                value -> value.equals("always") ? 0 : 1000).stream().map(HudLayout.Point::value).toList();
+
+        assertEquals(List.of("always", "near"), values);
+    }
+
     @Test
     void distanceOfAPointIsInThreeDimensions() {
         assertEquals(5, HudLayout.Point.of("a", 3, 4, 0, 0, 0, 0).distance(), EPSILON);

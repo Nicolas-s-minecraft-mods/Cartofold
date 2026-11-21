@@ -7,6 +7,7 @@ A waypoint is a place of your own, with a name and a color. The minimap, the map
 - Press **B** to add a waypoint at your position.
 - On the map of the world, right click an empty place to add a waypoint.
 - On the map of the world, right click a waypoint to change or remove it.
+- Each waypoint has its own distances in the world: **Hide nearer than** and **Hide farther than**, in blocks. An empty field uses the distance of the [settings](settings.md#markers-in-the-world). For **Hide farther than**, 0 shows the waypoint at all distances.
 
 You can have 256 waypoints. A name has 32 characters at most.
 
@@ -31,8 +32,8 @@ The screen of the game shows your waypoints, your banners and the markers of the
 
 - Press **U** to show or hide the markers in the world.
 - A near marker is above a far marker.
-- By default, the markers nearer than 50 blocks and farther than 1000 blocks do not show.
-- A marker shows 1 block above its position. The setting `height` changes this height.
+- By default, the markers nearer than 50 blocks and farther than 1000 blocks do not show. A waypoint can have its own distances.
+- A marker shows 10 blocks above its position. The setting `height` changes this height.
 - The button **Layers** of the map of the world has a button **HUD** for each layer. It shows or hides the markers of the layer in the world. A layer of a mod can stay out of the world: its button **HUD** is then off.
 
 The [settings](settings.md#markers-in-the-world) also change the opacity, the size, and the names and the distances.

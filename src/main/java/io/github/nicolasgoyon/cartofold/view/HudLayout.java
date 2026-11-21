@@ -3,6 +3,7 @@ package io.github.nicolasgoyon.cartofold.view;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
@@ -53,9 +54,21 @@ public final class HudLayout {
      * point is above a far point.
      */
     public static <T> List<Point<T>> select(List<Point<T>> points, int minDistance, int maxDistance) {
+        return select(points, value -> minDistance, value -> maxDistance);
+    }
+
+    /**
+     * The points in their own distance limits, from the farthest to the nearest: each value can have its own limits.
+     *
+     * @param minDistance the smallest distance of a value
+     * @param maxDistance the largest distance of a value, or 0 for no limit
+     */
+    public static <T> List<Point<T>> select(List<Point<T>> points, ToIntFunction<T> minDistance,
+            ToIntFunction<T> maxDistance) {
         List<Point<T>> shown = new ArrayList<>();
         for (Point<T> point : points) {
-            if (shown(point.distance(), minDistance, maxDistance)) {
+            if (shown(point.distance(), minDistance.applyAsInt(point.value()),
+                    maxDistance.applyAsInt(point.value()))) {
                 shown.add(point);
             }
         }
