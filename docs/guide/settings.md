@@ -59,8 +59,8 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `minDistance` | 50 | Hide the markers nearer than this distance, in blocks. |
 | `maxDistance` | 1000 | Hide the markers farther than this distance, in blocks. 0 shows all the far markers. |
 | `opacity` | 80 | The opacity of the markers, in percent, from 10 to 100. |
-| `height` | 1.0 | The height of a marker above its position, in blocks, from 0 to 64. |
-| `scale` | 1.0 | The size of the markers, from 0.5 to 4. |
+| `height` | 10.0 | The height of a marker above its position, in blocks, from 0 to 64. |
+| `scale` | 0.5 | The size of the markers, from 0.5 to 4. |
 | `names` | true | Show the names. |
 | `distances` | true | Show the distances. |
 | `hiddenLayers` | empty | The identifiers of the layers that do not show in the world. |

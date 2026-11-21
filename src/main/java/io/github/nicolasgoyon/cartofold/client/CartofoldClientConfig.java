@@ -127,9 +127,9 @@ public final class CartofoldClientConfig {
         HUD_OPACITY = builder.comment("The opacity of the markers, in percent.")
                 .translation("cartofold.configuration.hud.opacity").defineInRange("opacity", 80, 10, 100);
         HUD_HEIGHT = builder.comment("The height of a marker above its position, in blocks.")
-                .translation("cartofold.configuration.hud.height").defineInRange("height", 1.0, 0.0, 64.0);
+                .translation("cartofold.configuration.hud.height").defineInRange("height", 10.0, 0.0, 64.0);
         HUD_SCALE = builder.comment("The size of the markers: 1 is the normal size.")
-                .translation("cartofold.configuration.hud.scale").defineInRange("scale", 1.0, 0.5, 4.0);
+                .translation("cartofold.configuration.hud.scale").defineInRange("scale", 0.5, 0.5, 4.0);
         HUD_NAMES = builder.comment("Show the names of the markers.")
                 .translation("cartofold.configuration.hud.names").define("names", true);
         HUD_DISTANCES = builder.comment("Show the distances of the markers.")
