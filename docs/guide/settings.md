@@ -78,15 +78,19 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 
 ### Entities
 
-The section `entities` selects the loaded entities on the minimap and on the map of the world. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
+The section `entities` selects the loaded entities on the minimap, and its section `worldMap` selects them on the map of the world, with the same names. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `players` | true | Show the other players, as white dots. The map of the world shows their names. A player that sneaks hides its name. |
 | `hostile` | true | Show the hostile mobs, as red dots. |
-| `passive` | true | Show the animals, the villagers and the other passive mobs, as green dots. |
+| `passive` | true | Show the animals and the other passive mobs, as green dots. |
+| `villagers` | true | Show the villagers and the wandering traders, as blue dots. |
 | `objects` | false | Show the items on the ground, the boats and the minecarts, as yellow dots. |
-| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. |
+| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. The two views use it. |
+| `hiddenKinds` | empty | The identifiers of the kinds of entities of the other mods that the maps do not show, for example `mymod:caravans`. The two views use it. |
+
+Other mods can give their entities a kind with its own color (for example the caravans of a mod). Such an entity keeps the setting of its kind of Cartofold: a caravan that is a passive mob shows only when `passive` is true.
 
 ## Settings of the server
 
@@ -97,6 +101,8 @@ The file of the server is `serverconfig/cartofold-server.toml`, in the folder of
 | `entities.players` | true | Let the maps of the players show the other players. |
 | `entities.hostile` | true | Let the maps of the players show the hostile mobs. |
 | `entities.passive` | true | Let the maps of the players show the animals and the passive mobs. |
+| `entities.villagers` | true | Let the maps of the players show the villagers and the wandering traders. |
 | `entities.objects` | true | Let the maps of the players show the items and the vehicles. |
+| `entities.sameTeamOnly` | false | The maps of a player show only the other players of its team (`/team`). A player with no team sees no other player. |
 
 A setting at false hides this kind of entity on the maps of all the players, for a fair game. A changed client can still see the entities near its player.

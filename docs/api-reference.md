@@ -253,6 +253,17 @@ Opens the map of the world at a position.
 
 `CartofoldClientLayers.register(MapLayerRenderer renderer)` adds a layer that the client draws. Call it once, in the setup of the client.
 
+### `EntityMarkerKinds`
+
+| Method | Description |
+| --- | --- |
+| `register(Kind kind)` | Adds a kind of entities of a mod. A kind with the same identifier replaces it. |
+| `unregister(ResourceLocation id)` | Removes a kind. |
+| `kinds()` | The kinds, in the order of their registration. |
+| `of(Entity entity)` | The first kind that has the entity, or empty. |
+
+`Kind(ResourceLocation id, Component name, int color, Predicate<Entity> entities)`: the color is in RGB. The entity keeps the rules of its kind of Cartofold. The setting `entities.hiddenKinds` of the player hides a kind.
+
 ### `MapLayerRenderer`
 
 | Method | Description |

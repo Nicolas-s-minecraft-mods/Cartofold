@@ -98,8 +98,12 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.EnumValue<BannerViews> BANNER_VIEWS;
     public static final ModConfigSpec.DoubleValue MARKER_SCALE;
     public static final ModConfigSpec.EnumValue<Resolution> RESOLUTION;
-    /** For each kind of entity: true if the minimap and the map of the world show it. */
+    /** For each kind of entity: true if the minimap shows it. */
     public static final Map<EntityKind, ModConfigSpec.BooleanValue> ENTITIES = new EnumMap<>(EntityKind.class);
+    /** For each kind of entity: true if the map of the world shows it. */
+    public static final Map<EntityKind, ModConfigSpec.BooleanValue> WORLD_MAP_ENTITIES =
+            new EnumMap<>(EntityKind.class);
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_ENTITY_KINDS;
     public static final ModConfigSpec.IntValue ENTITIES_HEIGHT;
     public static final ModConfigSpec.BooleanValue HUD;
     public static final ModConfigSpec.BooleanValue HUD_WAYPOINTS;
@@ -204,13 +208,24 @@ public final class CartofoldClientConfig {
         builder.comment("The loaded entities on the minimap and on the map of the world. The server can stop them.")
                 .translation("cartofold.configuration.entities").push("entities");
         for (EntityKind kind : EntityKind.values()) {
-            ENTITIES.put(kind, builder.comment("Show the " + kind.key() + ".")
+            ENTITIES.put(kind, builder.comment("Show the " + kind.key() + " on the minimap.")
                     .translation("cartofold.configuration.entities." + kind.key())
                     .define(kind.key(), kind != EntityKind.OBJECTS));
         }
         ENTITIES_HEIGHT = builder.comment("Show only the entities at most this number of blocks above or below you."
                 + " 0 shows the entities at all heights.").translation("cartofold.configuration.entities.height")
                 .defineInRange("height", 24, 0, 512);
+        HIDDEN_ENTITY_KINDS = builder.comment("The identifiers of the kinds of entities of the other mods that the maps"
+                + " do not show.").translation("cartofold.configuration.entities.hidden_kinds")
+                .defineListAllowEmpty("hiddenKinds", List.of(), () -> "", value -> value instanceof String);
+        builder.comment("The loaded entities on the map of the world.")
+                .translation("cartofold.configuration.entities.world_map").push("worldMap");
+        for (EntityKind kind : EntityKind.values()) {
+            WORLD_MAP_ENTITIES.put(kind, builder.comment("Show the " + kind.key() + " on the map of the world.")
+                    .translation("cartofold.configuration.entities." + kind.key())
+                    .define(kind.key(), kind != EntityKind.OBJECTS));
+        }
+        builder.pop();
         builder.pop();
         SPEC = builder.build();
     }

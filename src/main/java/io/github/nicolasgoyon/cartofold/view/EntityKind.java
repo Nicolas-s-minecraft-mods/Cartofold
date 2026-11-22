@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.npc.Npc;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.VehicleEntity;
 
@@ -16,8 +17,10 @@ public enum EntityKind {
     PLAYERS(0, 0xFFFFFF),
     /** The hostile mobs: zombies, creepers, and the other enemies. */
     HOSTILE(1, 0xFF4040),
-    /** The other living entities: animals, villagers, fish. */
+    /** The other mobs: animals, fish. */
     PASSIVE(2, 0x50E050),
+    /** The villagers and the wandering traders (the mobs that are a {@link Npc}). */
+    VILLAGERS(4, 0x50A0FF),
     /** The items on the ground and the vehicles: boats, minecarts. */
     OBJECTS(3, 0xFFD040);
 
@@ -68,6 +71,9 @@ public enum EntityKind {
         if (entity instanceof Enemy) {
             return HOSTILE;
         }
+        if (entity instanceof Npc) {
+            return VILLAGERS;
+        }
         if (entity instanceof Mob) {
             return PASSIVE;
         }
@@ -76,5 +82,17 @@ public enum EntityKind {
             return OBJECTS;
         }
         return null;
+    }
+
+    /**
+     * True if the maps of a player show another player. With the rule of the server for the teams, only the players of
+     * the team of the player show, and a player with no team sees no other player.
+     *
+     * @param viewer       the player of the maps
+     * @param other        the other player
+     * @param sameTeamOnly the rule of the server
+     */
+    public static boolean showsPlayer(Player viewer, Player other, boolean sameTeamOnly) {
+        return !sameTeamOnly || (viewer.getTeam() != null && viewer.isAlliedTo(other));
     }
 }
