@@ -9,6 +9,8 @@ import io.github.nicolasgoyon.cartofold.data.MapSlice;
 import io.github.nicolasgoyon.cartofold.data.RegionPos;
 import io.github.nicolasgoyon.cartofold.network.ExplorationChunksPayload;
 import io.github.nicolasgoyon.cartofold.network.ExplorationRequestPayload;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -438,8 +440,36 @@ public final class ExplorationService {
             if (region.put(pos.x, pos.z, columns.get(), now) || first) {
                 sync.changed(key, pos, now);
             }
+            if (first && key.slice().surface()) {
+                LayerService.get().ifPresent(layers -> layers.chunkKnown(key.dimension(), pos));
+            }
         }
         return true;
+    }
+
+    /**
+     * The chunks of a set that have map data on the surface: the chunks that exist in the world and that a player of
+     * the server went near. This method creates no new region.
+     *
+     * @param level  the dimension
+     * @param chunks the chunks, as {@link ChunkPos#toLong()}
+     * @return the chunks with map data
+     */
+    public LongSet sampledChunks(ResourceKey<Level> level, LongSet chunks) {
+        ExplorationKey key = ExplorationKey.surface(level);
+        long now = now();
+        LongOpenHashSet sampled = new LongOpenHashSet();
+        GreyAreas.byRegion(chunks).forEach((pos, inRegion) -> {
+            MapRegion region = existingRegion(key, pos, now);
+            if (region != null) {
+                for (long chunk : inRegion) {
+                    if (region.sampled(ChunkPos.getX(chunk), ChunkPos.getZ(chunk)) != MapRegion.NEVER) {
+                        sampled.add(chunk);
+                    }
+                }
+            }
+        });
+        return sampled;
     }
 
     /** The map data of a region of the surface, from the memory or from the disk. A new region has no data. */

@@ -95,6 +95,13 @@ ChunkArea territory = ChunkArea.of("north_village", Level.OVERWORLD, chunks, 0x4
         Component.literal("North village")).withOnlyExplored(true);
 ```
 
+An area can also show its unexplored part in grey, with `area.withGreyUnexplored(true)`. The chunks that the player explored show the colors of the area. The other chunks of the area that exist in the world show in grey: the player sees where the area is before he explores it. A chunk exists in the world when the server has its map data, because a player of the server went near it. The chunks that no player loaded show no area. The border goes around the colored and the grey chunks, and the tooltip shows on both. The server finds the chunks that exist when it sends the area, and it sends the area again when a player loads a new chunk of the area (every 5 seconds at most).
+
+```java
+ChunkArea territory = ChunkArea.of("pillagers", Level.OVERWORLD, chunks, 0x60A03030, 0xFFA03030,
+        Component.literal("Pillager camp")).withGreyUnexplored(true);
+```
+
 - `LayerInfo.order`: a layer with a higher order draws above the layers with a lower order. The waypoints of the player are above all the layers.
 - `LayerInfo.views`: the kinds of views that show the layer (`MapViewKind.MINIMAP`, `WORLD_MAP`, `PAPER`, `FRAME`, `HUD`). With `HUD`, the screen of the game shows the markers of the layer at their positions in the world, with their icon, their name and their distance. The areas and the lines do not show in the world. `LayerInfo.of` and `MapViewKind.all()` contain `HUD`: remove it from the views of a layer with many markers that the player does not need in the world. The player can also hide each layer in the world.
 - `LayerInfo.onlyExplored`: the fills, the borders, the lines and the markers show only on the chunks that the player explored. A border shows when one of its two sides is explored. With `false`, the layer also shows on the background of a map frame.
