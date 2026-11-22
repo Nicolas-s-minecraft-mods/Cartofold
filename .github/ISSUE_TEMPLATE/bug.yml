@@ -32,14 +32,3 @@ body:
       label: Logs
       description: Paste the relevant part of `latest.log` or the crash report.
       render: text
-  - type: textarea
-    id: planning
-    attributes:
-      label: Planning
-      description: >-
-        The work in hours, and the dependencies (#12, Folkhold#597). The workflow Project copies them to the project.
-        Keep one item on each line.
-      value: |
-        Estimate: 
-        Blocked by: 
-        Blocks: 
