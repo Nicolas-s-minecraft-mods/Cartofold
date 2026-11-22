@@ -4,6 +4,7 @@ import io.github.nicolasgoyon.cartofold.network.SurveyMapPayload;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -77,6 +78,11 @@ public final class SurveyMapItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
+        // A map of a target has the name of its target (see PaperTargets).
+        Component itemName = stack.get(DataComponents.ITEM_NAME);
+        if (itemName != null) {
+            return itemName;
+        }
         SurveyMapId id = id(stack);
         return id == null ? super.getName(stack)
                 : Component.translatable("item.cartofold.survey_map.numbered", id.id());

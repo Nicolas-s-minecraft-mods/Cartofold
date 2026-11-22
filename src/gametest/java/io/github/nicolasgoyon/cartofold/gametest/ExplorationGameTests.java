@@ -321,4 +321,26 @@ public final class ExplorationGameTests {
                 "A band under the level is refused");
         helper.succeed();
     }
+
+    /**
+     * The chunks that exist in the world, for the grey part of an area: a sampled chunk counts, a chunk that no player
+     * loaded does not count.
+     */
+    @GameTest(template = "empty", timeoutTicks = 100)
+    public static void sampledChunksAreTheChunksThatExist(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        ExplorationService service = ExplorationService.get().orElseThrow();
+        ChunkPos chunk = new ChunkPos(helper.absolutePos(BlockPos.ZERO));
+        ChunkPos far = new ChunkPos(chunk.x + 100_000, chunk.z);
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet chunks = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        chunks.add(chunk.toLong());
+        chunks.add(far.toLong());
+        service.requestSample(level.dimension(), chunk);
+
+        helper.succeedWhen(() -> {
+            it.unimi.dsi.fastutil.longs.LongSet sampled = service.sampledChunks(level.dimension(), chunks);
+            helper.assertTrue(sampled.contains(chunk.toLong()), "The sampled chunk exists");
+            helper.assertFalse(sampled.contains(far.toLong()), "A chunk that no player loaded does not exist");
+        });
+    }
 }

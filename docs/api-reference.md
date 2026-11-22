@@ -95,7 +95,7 @@ ChunkArea.of(id, dimension, chunks, fillColor, borderColor, name, tooltip)
 | `name` | `Component` | The name of the area. |
 | `tooltip` | `List<Component>` | The lines above the area, 16 at most. With no line, the area has no tooltip. |
 
-The getters have the same names. `contains(chunkX, chunkZ)` tells if the area has a chunk. `withOnlyExplored(true)` gives the same area, shown only on the chunks that the player explored, with a border around this part; `onlyExplored()` reads it.
+The getters have the same names. `contains(chunkX, chunkZ)` tells if the area has a chunk. `withOnlyExplored(true)` gives the same area, shown only on the chunks that the player explored, with a border around this part. `onlyExplored()` reads it. `withGreyUnexplored(true)` gives the same area in its colors on the explored chunks, in grey on the other chunks that exist in the world, and with no area on the chunks that no player loaded. `greyUnexplored()` reads it. `knownChunks()` gives the chunks of the area that exist in the world: the server of Cartofold sets them with `withKnownChunks` before it sends the area.
 
 ### `MapLine`
 
@@ -157,6 +157,8 @@ Cartofold posts this event on `NeoForge.EVENT_BUS`, on the server thread. It com
 `PaperMapMarkers.register(PaperMarkerSource source)` adds a source of waypoints. Call it once, in the setup of the mod. A source with the identifier of another source replaces it. A survey map on a block of a source marks the map before the use action of the block.
 
 `PaperMapMarkers.isSurveyMap(ItemStack stack)` tells if an item has the tag `PaperMapMarkers.SURVEY_MAPS` (`cartofold:survey_maps`).
+
+`PaperMapMarkers.targetMap(ServerLevel level, BlockPos target, Holder<MapDecorationType> icon, Component name, int scale)` gives a new survey map with the target at its center and a marker with the icon and the name. The scale goes from 0 to 4. `PaperMapMarkers.target(MinecraftServer server, ItemStack stack)` gives the target of a map, or empty. `PaperMapMarkers.clearTarget(MinecraftServer server, ItemStack stack)` removes the target of a map.
 
 ### `PaperMarkerSource`
 
@@ -252,6 +254,17 @@ Opens the map of the world at a position.
 ### `CartofoldClientLayers`
 
 `CartofoldClientLayers.register(MapLayerRenderer renderer)` adds a layer that the client draws. Call it once, in the setup of the client.
+
+### `EntityMarkerKinds`
+
+| Method | Description |
+| --- | --- |
+| `register(Kind kind)` | Adds a kind of entities of a mod. A kind with the same identifier replaces it. |
+| `unregister(ResourceLocation id)` | Removes a kind. |
+| `kinds()` | The kinds, in the order of their registration. |
+| `of(Entity entity)` | The first kind that has the entity, or empty. |
+
+`Kind(ResourceLocation id, Component name, int color, Predicate<Entity> entities)`: the color is in RGB. The entity keeps the rules of its kind of Cartofold. The setting `entities.hiddenKinds` of the player hides a kind.
 
 ### `MapLayerRenderer`
 

@@ -28,7 +28,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -130,6 +132,19 @@ public final class ApiExamples {
                 (level, pos) -> Optional.of(Component.literal("Beacon"))));
     }
     // --8<-- [end:paper-source]
+
+    // --8<-- [start:target-map]
+    /** A cartographer sells a map to a treasure. The mod removes the target when another player opens the treasure. */
+    public static ItemStack treasureMap(ServerLevel level, BlockPos chest) {
+        return PaperMapMarkers.targetMap(level, chest, CartofoldMapDecorations.WAYPOINT,
+                Component.literal("Buried treasure"), 1);
+    }
+
+    /** The treasure is open: the maps of this treasure lose their target. */
+    public static void treasureOpened(ServerPlayer holder, ItemStack map) {
+        PaperMapMarkers.clearTarget(holder.server, map);
+    }
+    // --8<-- [end:target-map]
 
     // --8<-- [start:client-layer]
     /** A layer that the client draws itself. Call this method once, in the setup of the client. */

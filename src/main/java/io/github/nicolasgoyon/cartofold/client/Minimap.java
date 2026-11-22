@@ -58,7 +58,7 @@ public final class Minimap {
         // The position of this frame: the map, the layers and the waypoints move together between two ticks.
         Vec3 eye = player.getPosition(partialTick);
         MapProjection projection = new MapProjection(x, y, size, size, eye.x, eye.z,
-                MinimapLayout.scale(CartofoldClientConfig.MINIMAP_ZOOM.get()) * MinimapSpeed.factor(),
+                MinimapSpeed.scale(),
                 MinimapLayout.mapRotation(rotate, yaw));
         float centerX = x + size / 2f;
         float centerY = y + size / 2f;
@@ -89,7 +89,8 @@ public final class Minimap {
         ExplorationRequests.view(Minimap.class, slice, regions);
         MapView.render(graphics, slice, projection, MapViewKind.MINIMAP, layer -> true, null);
         graphics.flush();
-        EntityMarkers.render(graphics, minecraft.level.dimension(), projection, partialTick, null);
+        EntityMarkers.render(graphics, minecraft.level.dimension(), projection, MapViewKind.MINIMAP, partialTick,
+                null);
         if (CartofoldClientConfig.MINIMAP_WAYPOINTS.get()) {
             WaypointMarkers.renderMinimap(graphics, minecraft.level.dimension(), projection, round);
         }

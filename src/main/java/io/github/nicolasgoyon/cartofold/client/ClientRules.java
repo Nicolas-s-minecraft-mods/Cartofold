@@ -11,6 +11,7 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 @EventBusSubscriber(modid = Cartofold.MOD_ID, value = Dist.CLIENT)
 public final class ClientRules {
     private static volatile int entities;
+    private static volatile boolean sameTeamOnly;
 
     private ClientRules() {
     }
@@ -20,12 +21,19 @@ public final class ClientRules {
         return entities;
     }
 
+    /** True if the maps show only the other players of the team of the player. */
+    public static boolean sameTeamOnly() {
+        return sameTeamOnly;
+    }
+
     public static void set(ServerRulesPayload payload) {
         entities = payload.entities();
+        sameTeamOnly = payload.sameTeamOnly();
     }
 
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         entities = 0;
+        sameTeamOnly = false;
     }
 }

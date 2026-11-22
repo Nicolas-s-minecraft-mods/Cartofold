@@ -24,8 +24,12 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `shape` | `SQUARE` | `SQUARE` or `ROUND`. |
 | `corner` | `TOP_LEFT` | The corner of the screen. |
 | `size` | 100 | The size in units of the screen, from 48 to 256. |
-| `zoom` | 2 | The zoom level, from 0 (far) to 4 (near). |
+| `zoom` | 2 | The zoom level, from -2 (far) to 4 (near). Each level doubles the size of the land: -2 shows 16 blocks in one unit of the screen. |
 | `speedZoom` | true | Zoom out the minimap when you go faster. The zoom level is then the zoom when you stop. |
+| `speedZoomStart` | 0.5 | The speed of the first zoom out, in blocks each second. A walk is about 4.3, a sprint about 5.6. |
+| `speedZoomFull` | 15.0 | The speed of the strongest zoom out, in blocks each second. An elytra is about 30. |
+| `speedZoomOut` | 5.0 | The strongest zoom out, from 1 to 16: 5 shows 5 times more land on each side. |
+| `speedZoomLimit` | -2 | The zoom with the speed does not go farther than this zoom level. |
 | `rotate` | false | Turn the minimap with you. |
 | `coordinates` | true | Show your coordinates. |
 | `waypoints` | true | Show the waypoints. |
@@ -43,6 +47,12 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `scale` | 1.0 | The scale of the markers, of their names and of the arrow of the player, from 0.5 to 3. |
+
+### Maps
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `resolution` | `FULL` | The resolution of the land on the minimap, on the map of the world and in the map frames: `FULL`, `HALF` or `QUARTER`. A lower resolution uses less memory. |
 
 ### Layers
 
@@ -68,15 +78,19 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 
 ### Entities
 
-The section `entities` selects the loaded entities on the minimap and on the map of the world. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
+The section `entities` selects the loaded entities on the minimap, and its section `worldMap` selects them on the map of the world, with the same names. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `players` | true | Show the other players, as white dots. The map of the world shows their names. A player that sneaks hides its name. |
 | `hostile` | true | Show the hostile mobs, as red dots. |
-| `passive` | true | Show the animals, the villagers and the other passive mobs, as green dots. |
+| `passive` | true | Show the animals and the other passive mobs, as green dots. |
+| `villagers` | true | Show the villagers and the wandering traders, as blue dots. |
 | `objects` | false | Show the items on the ground, the boats and the minecarts, as yellow dots. |
-| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. |
+| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. The two views use it. |
+| `hiddenKinds` | empty | The identifiers of the kinds of entities of the other mods that the maps do not show, for example `mymod:caravans`. The two views use it. |
+
+Other mods can give their entities a kind with its own color (for example the caravans of a mod). Such an entity keeps the setting of its kind of Cartofold: a caravan that is a passive mob shows only when `passive` is true.
 
 ## Settings of the server
 
@@ -87,6 +101,8 @@ The file of the server is `serverconfig/cartofold-server.toml`, in the folder of
 | `entities.players` | true | Let the maps of the players show the other players. |
 | `entities.hostile` | true | Let the maps of the players show the hostile mobs. |
 | `entities.passive` | true | Let the maps of the players show the animals and the passive mobs. |
+| `entities.villagers` | true | Let the maps of the players show the villagers and the wandering traders. |
 | `entities.objects` | true | Let the maps of the players show the items and the vehicles. |
+| `entities.sameTeamOnly` | false | The maps of a player show only the other players of its team (`/team`). A player with no team sees no other player. |
 
 A setting at false hides this kind of entity on the maps of all the players, for a fair game. A changed client can still see the entities near its player.

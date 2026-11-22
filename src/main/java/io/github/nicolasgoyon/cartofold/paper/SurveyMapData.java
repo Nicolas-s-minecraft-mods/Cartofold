@@ -182,9 +182,19 @@ public final class SurveyMapData extends SavedData {
         return removed;
     }
 
-    /** A copy of the data at another place, with no pixel and no marker, for a zoom or a move. */
+    /**
+     * A copy of the data at another place, with no pixel, for a zoom or a move. The copy keeps only the target of the
+     * map (see {@link PaperTargets}), when the target is in its area.
+     */
     public SurveyMapData moved(int newCenterX, int newCenterZ, int newScale) {
-        return new SurveyMapData(dimension, newCenterX, newCenterZ, newScale, false, new byte[SIZE * SIZE]);
+        SurveyMapData copy = new SurveyMapData(dimension, newCenterX, newCenterZ, newScale, false,
+                new byte[SIZE * SIZE]);
+        for (SurveyMarker marker : markers) {
+            if (PaperTargets.isTarget(marker) && PaperWaypoints.inside(copy, marker.pos())) {
+                copy.markers.add(marker);
+            }
+        }
+        return copy;
     }
 
     /** A locked copy of the data. */
