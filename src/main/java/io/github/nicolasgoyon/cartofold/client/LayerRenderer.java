@@ -47,6 +47,8 @@ import org.joml.Matrix4f;
 
 /** Draws the layers in the map views, and finds the marker and the area under the mouse. */
 public final class LayerRenderer {
+    /** The color of the grey part of the areas, in RGB. */
+    private static final int GREY = 0x808080;
     /** The width of the border of an area, in units of the screen. */
     private static final float BORDER_WIDTH = 1.5f;
     /** The size of an icon of a marker in the world view (see {@link WorldHud}), in units of the screen. */
@@ -153,6 +155,18 @@ public final class LayerRenderer {
                 MapShapes.quad(buffer, matrix, projection.toScreen(minX, minZ), projection.toScreen(maxX, minZ),
                         projection.toScreen(maxX, minZ + 16), projection.toScreen(minX, minZ + 16), area.fillColor());
             }
+            int[] greyRows = shape.greyRows;
+            int grey = grey(area.fillColor());
+            for (int i = 0; i < greyRows.length; i += 3) {
+                double minZ = greyRows[i] << 4;
+                double minX = Math.max(greyRows[i + 1] << 4, Math.floor(bounds[0]));
+                double maxX = Math.min((greyRows[i + 2] + 1) << 4, Math.ceil(bounds[2]));
+                if (minX > maxX || minZ + 16 < bounds[1] || minZ > bounds[3]) {
+                    continue;
+                }
+                MapShapes.quad(buffer, matrix, projection.toScreen(minX, minZ), projection.toScreen(maxX, minZ),
+                        projection.toScreen(maxX, minZ + 16), projection.toScreen(minX, minZ + 16), grey);
+            }
             for (int[] side : shape.sides) {
                 double fromX = Math.max(side[0], Math.floor(bounds[0]));
                 double fromZ = Math.max(side[1], Math.floor(bounds[1]));
@@ -253,14 +267,22 @@ public final class LayerRenderer {
         /** The version of the exploration of the shape, or 0 for a shape with no use of the exploration. */
         final long exploration;
         final int[] rows;
+        /** The rows of the grey part of the area: its chunks that exist in the world and that the player did not explore. */
+        final int[] greyRows;
         final List<int[]> sides;
 
-        Shape(boolean layerExplored, long exploration, int[] rows, List<int[]> sides) {
+        Shape(boolean layerExplored, long exploration, int[] rows, int[] greyRows, List<int[]> sides) {
             this.layerExplored = layerExplored;
             this.exploration = exploration;
             this.rows = rows;
+            this.greyRows = greyRows;
             this.sides = sides;
         }
+    }
+
+    /** The color of the grey part of an area: grey, with the alpha of the fill of the area. */
+    static int grey(int fillColor) {
+        return (fillColor & 0xFF000000) | GREY;
     }
 
     /**
@@ -268,15 +290,32 @@ public final class LayerRenderer {
      * for an area with only the explored chunks: the views do not compute the shape at each frame.
      */
     private static Shape shape(ChunkArea area, boolean layerExplored, Explored explored) {
-        boolean usesExploration = area.onlyExplored() || layerExplored;
+        boolean grey = area.greyUnexplored();
+        boolean usesExploration = area.onlyExplored() || grey || layerExplored;
         long exploration = usesExploration ? ClientExploration.get().version() : 0;
         Shape shape = SHAPES.get(area);
         if (shape != null && shape.layerExplored == layerExplored && shape.exploration == exploration) {
             return shape;
         }
         LongSet visible = usesExploration ? exploredChunks(area.chunks(), explored) : area.chunks();
-        // An area of its own with only the explored chunks: its border follows the explored part.
-        LongSet outline = area.onlyExplored() ? visible : area.chunks();
+        LongSet greyChunks = new LongOpenHashSet();
+        if (grey && !layerExplored) {
+            area.knownChunks().forEach(chunk -> {
+                if (!visible.contains(chunk)) {
+                    greyChunks.add(chunk);
+                }
+            });
+        }
+        // An area of its own with only the explored chunks: its border follows the explored part. An area with a grey
+        // part: its border goes around the explored part and the grey part.
+        LongSet outline;
+        if (grey) {
+            LongOpenHashSet union = new LongOpenHashSet(visible);
+            union.addAll(greyChunks);
+            outline = union;
+        } else {
+            outline = area.onlyExplored() ? visible : area.chunks();
+        }
         List<int[]> sides = new ArrayList<>();
         if ((area.borderColor() >>> 24) != 0) {
             for (int[] side : LayerGeometry.border(outline, LayerGeometry.all())) {
@@ -286,8 +325,10 @@ public final class LayerRenderer {
                 }
             }
         }
-        int[] rows = (area.fillColor() >>> 24) != 0 ? LayerGeometry.rows(visible) : new int[0];
-        shape = new Shape(layerExplored, exploration, rows, LayerGeometry.join(sides));
+        boolean fill = (area.fillColor() >>> 24) != 0;
+        int[] rows = fill ? LayerGeometry.rows(visible) : new int[0];
+        int[] greyRows = fill && !greyChunks.isEmpty() ? LayerGeometry.rows(greyChunks) : new int[0];
+        shape = new Shape(layerExplored, exploration, rows, greyRows, LayerGeometry.join(sides));
         SHAPES.put(area, shape);
         return shape;
     }
@@ -381,12 +422,20 @@ public final class LayerRenderer {
             }
             for (ChunkArea area : content.areas().reversed()) {
                 if (!area.tooltip().isEmpty() && area.dimension().equals(dimension)
-                        && area.contains(chunkX, chunkZ) && (!area.onlyExplored() || explored.chunk(chunkX, chunkZ))) {
+                        && area.contains(chunkX, chunkZ) && shows(area, chunkX, chunkZ, explored)) {
                     return Optional.of(area);
                 }
             }
         }
         return Optional.empty();
+    }
+
+    /** True if the views show a chunk of an area: in its colors or in grey. */
+    private static boolean shows(ChunkArea area, int chunkX, int chunkZ, Explored explored) {
+        if (area.greyUnexplored()) {
+            return explored.chunk(chunkX, chunkZ) || area.knownChunks().contains(ChunkPos.asLong(chunkX, chunkZ));
+        }
+        return !area.onlyExplored() || explored.chunk(chunkX, chunkZ);
     }
 
     /**

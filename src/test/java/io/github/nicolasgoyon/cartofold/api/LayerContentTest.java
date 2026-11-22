@@ -126,4 +126,42 @@ class LayerContentTest {
 
         assertThrows(IllegalArgumentException.class, () -> content.apply(update));
     }
+
+    @Test
+    void greyAreaKeepsOnlyItsOwnKnownChunks() {
+        ChunkArea area = ChunkArea.of("area", OVERWORLD, List.of(new ChunkPos(0, 0), new ChunkPos(1, 0)), 0x40FF0000,
+                0xFFFF0000, Component.literal("Area")).withGreyUnexplored(true);
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet known = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        known.add(new ChunkPos(1, 0).toLong());
+        known.add(new ChunkPos(5, 5).toLong());
+
+        ChunkArea resolved = area.withKnownChunks(known);
+
+        assertEquals(true, resolved.greyUnexplored());
+        assertEquals(1, resolved.knownChunks().size());
+        assertEquals(true, resolved.knownChunks().contains(new ChunkPos(1, 0).toLong()));
+        // An area with no grey part keeps no known chunks.
+        assertEquals(0, resolved.withGreyUnexplored(false).knownChunks().size());
+        assertEquals(false, area.equals(resolved));
+    }
+
+    @Test
+    void greyAreaGoesThroughTheNetwork() {
+        ChunkArea area = ChunkArea.of("area", OVERWORLD, List.of(new ChunkPos(0, 0), new ChunkPos(1, 0)), 0x40FF0000,
+                0xFFFF0000, Component.literal("Area")).withGreyUnexplored(true);
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet known = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        known.add(new ChunkPos(0, 0).toLong());
+        ChunkArea resolved = area.withKnownChunks(known);
+        net.minecraft.network.RegistryFriendlyByteBuf buffer = new net.minecraft.network.RegistryFriendlyByteBuf(
+                io.netty.buffer.Unpooled.buffer(), net.minecraft.core.RegistryAccess.EMPTY,
+                net.neoforged.neoforge.network.connection.ConnectionType.NEOFORGE);
+
+        ChunkArea.STREAM_CODEC.encode(buffer, resolved);
+        ChunkArea.STREAM_CODEC.encode(buffer, area.withGreyUnexplored(false).withOnlyExplored(true));
+
+        assertEquals(resolved, ChunkArea.STREAM_CODEC.decode(buffer));
+        ChunkArea plain = ChunkArea.STREAM_CODEC.decode(buffer);
+        assertEquals(false, plain.greyUnexplored());
+        assertEquals(true, plain.onlyExplored());
+    }
 }

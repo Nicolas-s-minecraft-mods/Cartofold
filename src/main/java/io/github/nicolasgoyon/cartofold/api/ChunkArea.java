@@ -40,6 +40,11 @@ public final class ChunkArea {
                 ComponentSerialization.STREAM_CODEC.encode(buf, area.name);
                 TOOLTIP_CODEC.encode(buf, area.tooltip);
                 buf.writeBoolean(area.onlyExplored);
+                buf.writeBoolean(area.greyUnexplored);
+                if (area.greyUnexplored) {
+                    buf.writeVarInt(area.knownChunks.size());
+                    area.knownChunks.forEach(buf::writeLong);
+                }
             },
             buf -> {
                 String id = buf.readUtf();
@@ -56,7 +61,19 @@ public final class ChunkArea {
                 int border = buf.readInt();
                 Component name = ComponentSerialization.STREAM_CODEC.decode(buf);
                 List<Component> tooltip = TOOLTIP_CODEC.decode(buf);
-                return new ChunkArea(id, dimension, chunks, fill, border, name, tooltip, buf.readBoolean());
+                boolean onlyExplored = buf.readBoolean();
+                boolean grey = buf.readBoolean();
+                LongOpenHashSet known = new LongOpenHashSet();
+                if (grey) {
+                    int knownCount = ByteBufCodecs.VAR_INT.decode(buf);
+                    if (knownCount < 0 || knownCount > count) {
+                        throw new io.netty.handler.codec.DecoderException("Too many known chunks: " + knownCount);
+                    }
+                    for (int i = 0; i < knownCount; i++) {
+                        known.add(buf.readLong());
+                    }
+                }
+                return new ChunkArea(id, dimension, chunks, fill, border, name, tooltip, onlyExplored, grey, known);
             });
 
     private final String id;
@@ -67,9 +84,12 @@ public final class ChunkArea {
     private final Component name;
     private final List<Component> tooltip;
     private final boolean onlyExplored;
+    private final boolean greyUnexplored;
+    private final LongSet knownChunks;
 
     private ChunkArea(String id, ResourceKey<Level> dimension, LongOpenHashSet chunks, int fillColor,
-            int borderColor, Component name, List<Component> tooltip, boolean onlyExplored) {
+            int borderColor, Component name, List<Component> tooltip, boolean onlyExplored, boolean greyUnexplored,
+            LongOpenHashSet knownChunks) {
         if (chunks.size() > MAX_CHUNKS) {
             throw new IllegalArgumentException("An area has " + MAX_CHUNKS + " chunks at most");
         }
@@ -84,6 +104,9 @@ public final class ChunkArea {
         this.name = name;
         this.tooltip = List.copyOf(tooltip);
         this.onlyExplored = onlyExplored;
+        this.greyUnexplored = greyUnexplored;
+        knownChunks.retainAll(chunks);
+        this.knownChunks = LongSets.unmodifiable(greyUnexplored ? knownChunks : new LongOpenHashSet());
     }
 
     /**
@@ -116,7 +139,8 @@ public final class ChunkArea {
             int borderColor, Component name, List<Component> tooltip) {
         LongOpenHashSet packed = new LongOpenHashSet(chunks.size());
         chunks.forEach(chunk -> packed.add(chunk.toLong()));
-        return new ChunkArea(id, dimension, packed, fillColor, borderColor, name, tooltip, false);
+        return new ChunkArea(id, dimension, packed, fillColor, borderColor, name, tooltip, false, false,
+                new LongOpenHashSet());
     }
 
     public String id() {
@@ -168,18 +192,66 @@ public final class ChunkArea {
      * the elements of a layer.
      */
     public ChunkArea withOnlyExplored(boolean only) {
-        return new ChunkArea(id, dimension, new LongOpenHashSet(chunks), fillColor, borderColor, name, tooltip, only);
+        return new ChunkArea(id, dimension, new LongOpenHashSet(chunks), fillColor, borderColor, name, tooltip, only,
+                greyUnexplored, new LongOpenHashSet(knownChunks));
+    }
+
+    /**
+     * True if the views show the unexplored part of the area in grey. See {@link #withGreyUnexplored}.
+     */
+    public boolean greyUnexplored() {
+        return greyUnexplored;
+    }
+
+    /**
+     * The same area, with its unexplored part in grey, or with no grey part. With the grey part:
+     *
+     * <ul>
+     *   <li>the chunks that the player explored show the colors of the area;</li>
+     *   <li>the other chunks of the area that exist in the world show in grey. A chunk exists in the world when the
+     *       server has its map data: a player of the server went near it;</li>
+     *   <li>the chunks that no player loaded show no area. The border goes around the colored and the grey chunks.</li>
+     * </ul>
+     *
+     * <p>The server of Cartofold finds the chunks that exist in the world when it sends the area, and it sends the area
+     * again when a player loads a new chunk of the area. The tooltip shows on the colored and on the grey chunks.
+     * {@link #withOnlyExplored} has no effect on an area with a grey part. {@link LayerInfo#onlyExplored} hides all the
+     * unexplored part of a layer, also the grey part.
+     */
+    public ChunkArea withGreyUnexplored(boolean grey) {
+        return new ChunkArea(id, dimension, new LongOpenHashSet(chunks), fillColor, borderColor, name, tooltip,
+                onlyExplored, grey, new LongOpenHashSet(knownChunks));
+    }
+
+    /**
+     * The chunks of an area with a grey part that exist in the world, as {@link ChunkPos#toLong()}. The server of
+     * Cartofold sets them before it sends the area to a client: the other mods do not set them. The set is empty for an
+     * area with no grey part.
+     */
+    public LongSet knownChunks() {
+        return knownChunks;
+    }
+
+    /**
+     * The same area with the chunks that exist in the world. Only the server of Cartofold uses this method: the chunks
+     * out of the area do not count.
+     */
+    public ChunkArea withKnownChunks(LongSet known) {
+        return new ChunkArea(id, dimension, new LongOpenHashSet(chunks), fillColor, borderColor, name, tooltip,
+                onlyExplored, greyUnexplored, new LongOpenHashSet(known));
     }
 
     @Override
     public boolean equals(Object other) {
         return other instanceof ChunkArea area && id.equals(area.id) && dimension.equals(area.dimension)
                 && chunks.equals(area.chunks) && fillColor == area.fillColor && borderColor == area.borderColor
-                && name.equals(area.name) && tooltip.equals(area.tooltip) && onlyExplored == area.onlyExplored;
+                && name.equals(area.name) && tooltip.equals(area.tooltip) && onlyExplored == area.onlyExplored
+                && greyUnexplored == area.greyUnexplored && knownChunks.equals(area.knownChunks);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dimension, chunks, fillColor, borderColor, name, tooltip, onlyExplored);
+        return Objects.hash(id, dimension, chunks, fillColor, borderColor, name, tooltip, onlyExplored, greyUnexplored,
+                knownChunks);
     }
 }

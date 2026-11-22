@@ -95,7 +95,7 @@ ChunkArea.of(id, dimension, chunks, fillColor, borderColor, name, tooltip)
 | `name` | `Component` | The name of the area. |
 | `tooltip` | `List<Component>` | The lines above the area, 16 at most. With no line, the area has no tooltip. |
 
-The getters have the same names. `contains(chunkX, chunkZ)` tells if the area has a chunk. `withOnlyExplored(true)` gives the same area, shown only on the chunks that the player explored, with a border around this part; `onlyExplored()` reads it.
+The getters have the same names. `contains(chunkX, chunkZ)` tells if the area has a chunk. `withOnlyExplored(true)` gives the same area, shown only on the chunks that the player explored, with a border around this part. `onlyExplored()` reads it. `withGreyUnexplored(true)` gives the same area in its colors on the explored chunks, in grey on the other chunks that exist in the world, and with no area on the chunks that no player loaded. `greyUnexplored()` reads it. `knownChunks()` gives the chunks of the area that exist in the world: the server of Cartofold sets them with `withKnownChunks` before it sends the area.
 
 ### `MapLine`
 

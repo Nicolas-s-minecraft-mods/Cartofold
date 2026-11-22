@@ -64,6 +64,7 @@ public final class Cartofold {
         NeoForge.EVENT_BUS.addListener(LayerService::onServerStopping);
         NeoForge.EVENT_BUS.addListener(LayerService::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(LayerService::onPlayerLoggedOut);
+        NeoForge.EVENT_BUS.addListener(LayerService::onServerTick);
         NeoForge.EVENT_BUS.addListener(PaperWaypoints::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BannerService::onServerStarted);
         NeoForge.EVENT_BUS.addListener(BannerService::onServerStopping);
