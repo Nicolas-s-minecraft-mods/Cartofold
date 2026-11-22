@@ -25,7 +25,7 @@ import urllib.request
 import uuid
 
 API = "https://api.modrinth.com/v2"
-USER_AGENT = "nicolas-goyon/cartofold (release workflow)"
+USER_AGENT = "Nicolas-s-minecraft-mods/Cartofold (release workflow)"
 SUFFIXES = ("", "-sources", "-javadoc")
 TYPES = ("release", "beta", "alpha")
 # Cartofold is required on the client and on the server.

@@ -1,8 +1,8 @@
 site_name: Cartofold
 site_description: One map engine for the minimap, the world map, the paper maps and the maps of the other mods.
-site_url: https://nicolas-goyon.github.io/Cartofold/
-repo_url: https://github.com/nicolas-goyon/Cartofold
-repo_name: nicolas-goyon/Cartofold
+site_url: https://nicolas-s-minecraft-mods.github.io/Cartofold/
+repo_url: https://github.com/Nicolas-s-minecraft-mods/Cartofold
+repo_name: Nicolas-s-minecraft-mods/Cartofold
 edit_uri: edit/develop/docs/
 strict: true
 
@@ -59,7 +59,7 @@ nav:
       - API guide: api.md
       - API examples: api-examples.md
       - API reference: api-reference.md
-      - Javadoc: https://nicolas-goyon.github.io/Cartofold/javadoc/io/github/nicolasgoyon/cartofold/api/package-summary.html
+      - Javadoc: https://nicolas-s-minecraft-mods.github.io/Cartofold/javadoc/io/github/nicolasgoyon/cartofold/api/package-summary.html
   - Technical:
       - Architecture: technical/architecture.md
       - Design: design.md
@@ -72,5 +72,5 @@ extra:
       link: https://modrinth.com/project/cartofold
       name: Cartofold on Modrinth
     - icon: fontawesome/brands/github
-      link: https://github.com/nicolas-goyon/Cartofold
+      link: https://github.com/Nicolas-s-minecraft-mods/Cartofold
       name: Cartofold on GitHub

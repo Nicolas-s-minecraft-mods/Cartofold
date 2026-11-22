@@ -1,14 +1,14 @@
 modLoader = "javafml"
 loaderVersion = "${loader_version_range}"
 license = "${mod_license}"
-issueTrackerURL = "https://github.com/nicolas-goyon/Cartofold/issues"
+issueTrackerURL = "https://github.com/Nicolas-s-minecraft-mods/Cartofold/issues"
 
 [[mods]]
 modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 authors = "${mod_authors}"
-displayURL = "https://github.com/nicolas-goyon/Cartofold"
+displayURL = "https://github.com/Nicolas-s-minecraft-mods/Cartofold"
 logoFile = "cartofold_logo.png"
 logoBlur = false
 # The mod list shows the translated description (key: fml.menu.mods.info.description.<mod_id>) when it exists.
