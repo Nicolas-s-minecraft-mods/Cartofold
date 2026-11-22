@@ -9,6 +9,7 @@
 [![Build](https://img.shields.io/github/actions/workflow/status/Nicolas-s-minecraft-mods/Cartofold/build.yml?branch=develop&label=build)](https://github.com/Nicolas-s-minecraft-mods/Cartofold/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/Nicolas-s-minecraft-mods/Cartofold?label=release)](https://github.com/Nicolas-s-minecraft-mods/Cartofold/releases/latest)
 [![Modrinth](https://img.shields.io/modrinth/dt/fmrNNS3n?logo=modrinth&label=modrinth)](https://modrinth.com/project/cartofold)
+[![CurseForge](https://img.shields.io/curseforge/dt/1823712?logo=curseforge&label=curseforge)](https://www.curseforge.com/projects/1823712)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-795548)](https://nicolas-s-minecraft-mods.github.io/Cartofold/)
 ![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A)
 ![NeoForge](https://img.shields.io/badge/NeoForge-21.1-E68C37)
