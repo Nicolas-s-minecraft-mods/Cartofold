@@ -61,7 +61,7 @@ public final class ServerRules {
 
     /** The rules of the server now. */
     public static ServerRulesPayload rules() {
-        return new ServerRulesPayload(CartofoldServerConfig.entities());
+        return new ServerRulesPayload(CartofoldServerConfig.entities(), CartofoldServerConfig.SAME_TEAM_ONLY.get());
     }
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
