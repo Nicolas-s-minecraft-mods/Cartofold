@@ -13,6 +13,8 @@ public final class CartofoldServerConfig {
     public static final ModConfigSpec SPEC;
     /** For each kind of entity: true if the maps of the players can show it. */
     public static final Map<EntityKind, ModConfigSpec.BooleanValue> ENTITIES = new EnumMap<>(EntityKind.class);
+    /** True if the maps show only the players of the team of the player. */
+    public static final ModConfigSpec.BooleanValue SAME_TEAM_ONLY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -23,6 +25,9 @@ public final class CartofoldServerConfig {
             ENTITIES.put(kind, builder.comment("Let the maps of the players show the " + kind.key() + ".")
                     .translation("cartofold.configuration.server.entities." + kind.key()).define(kind.key(), true));
         }
+        SAME_TEAM_ONLY = builder.comment("The maps of a player show only the other players of its team. A player with no"
+                + " team sees no other player.").translation("cartofold.configuration.server.entities.same_team_only")
+                .define("sameTeamOnly", false);
         builder.pop();
         SPEC = builder.build();
     }

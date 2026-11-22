@@ -48,6 +48,12 @@ Send the layer once with `setForAll`, then send only the changes.
 --8<-- "src/gametest/java/io/github/nicolasgoyon/cartofold/gametest/ApiExamples.java:paper-source"
 ```
 
+### A survey map to a target
+
+```java
+--8<-- "src/gametest/java/io/github/nicolasgoyon/cartofold/gametest/ApiExamples.java:target-map"
+```
+
 ## On the client
 
 Keep these calls in classes that only the client loads.

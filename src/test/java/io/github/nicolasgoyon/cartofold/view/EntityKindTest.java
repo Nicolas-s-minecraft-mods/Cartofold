@@ -14,7 +14,8 @@ class EntityKindTest {
         assertEquals(2, EntityKind.HOSTILE.bit());
         assertEquals(4, EntityKind.PASSIVE.bit());
         assertEquals(8, EntityKind.OBJECTS.bit());
-        assertEquals(15, EntityKind.all());
+        assertEquals(16, EntityKind.VILLAGERS.bit());
+        assertEquals(31, EntityKind.all());
     }
 
     @Test
