@@ -1,6 +1,7 @@
 package io.github.nicolasgoyon.cartofold.network;
 
 import io.github.nicolasgoyon.cartofold.Cartofold;
+import io.github.nicolasgoyon.cartofold.data.MapRegion;
 import io.github.nicolasgoyon.cartofold.data.MapSlice;
 import io.github.nicolasgoyon.cartofold.data.RegionPos;
 import java.util.Comparator;
@@ -32,15 +33,45 @@ public record ExplorationRequestPayload(ResourceKey<Level> dimension, List<Slice
     public static final int MAX_SLICES = 4;
 
     /**
-     * The regions of a slice.
+     * The regions of a slice, with the data that the client already has for each region.
      *
      * @param slice   the slice
      * @param regions the regions, {@link #MAX_REGIONS} at most
+     * @param known   the data that the client has for each region, in the order of the regions
      */
-    public record SliceRegions(MapSlice slice, List<RegionPos> regions) {
+    public record SliceRegions(MapSlice slice, List<RegionPos> regions, List<Known> known) {
         public SliceRegions {
             regions = List.copyOf(regions);
+            known = List.copyOf(known);
+            if (known.size() != regions.size()) {
+                throw new IllegalArgumentException(known.size() + " known data for " + regions.size() + " regions");
+            }
         }
+
+        /** The regions of a slice, with no data on the client. */
+        public SliceRegions(MapSlice slice, List<RegionPos> regions) {
+            this(slice, regions, java.util.Collections.nCopies(regions.size(), Known.NONE));
+        }
+
+        /** The data that the client has for a region of this slice, or {@link Known#NONE}. */
+        public Known known(RegionPos pos) {
+            int index = regions.indexOf(pos);
+            return index < 0 ? Known.NONE : known.get(index);
+        }
+    }
+
+    /**
+     * The data that the client has for a region, from its cache. The server then sends only the chunks with a later
+     * sample. If the server has more chunks with a sample at {@code time} or before than {@code chunks}, the client
+     * misses chunks (for example the chunks of a map that another player shared): the server then sends all the chunks
+     * of the region.
+     *
+     * @param time   the time of the last sample of the region on the client, or {@link MapRegion#NEVER}
+     * @param chunks the number of chunks of the region on the client
+     */
+    public record Known(long time, int chunks) {
+        /** No data on the client. */
+        public static final Known NONE = new Known(MapRegion.NEVER, 0);
     }
 
     /** The largest number of regions of a slice in one request. */
@@ -54,9 +85,15 @@ public record ExplorationRequestPayload(ResourceKey<Level> dimension, List<Slice
             ByteBufCodecs.VAR_INT, RegionPos::z,
             RegionPos::new);
 
+    private static final StreamCodec<FriendlyByteBuf, Known> KNOWN_CODEC = StreamCodec.composite(
+            ByteBufCodecs.VAR_LONG, Known::time,
+            ByteBufCodecs.VAR_INT, Known::chunks,
+            Known::new);
+
     private static final StreamCodec<FriendlyByteBuf, SliceRegions> SLICE_CODEC = StreamCodec.composite(
             MapSlice.STREAM_CODEC, SliceRegions::slice,
             REGION_CODEC.apply(ByteBufCodecs.list(MAX_REGIONS)), SliceRegions::regions,
+            KNOWN_CODEC.apply(ByteBufCodecs.list(MAX_REGIONS)), SliceRegions::known,
             SliceRegions::new);
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ExplorationRequestPayload> STREAM_CODEC =

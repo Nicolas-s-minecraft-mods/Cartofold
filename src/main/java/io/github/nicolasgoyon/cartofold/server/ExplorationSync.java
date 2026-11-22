@@ -86,7 +86,7 @@ public final class ExplorationSync {
             subscription.pending.removeIf(chunk -> !wanted.contains(RegionPos.ofChunk(chunk.x, chunk.z)));
             for (RegionPos pos : wanted) {
                 if (subscription.regions.add(pos)) {
-                    queueRegion(player, key, subscription, pos, now);
+                    queueRegion(player, key, subscription, pos, slice.known(pos), now);
                 }
             }
             next.put(key, subscription);
@@ -106,7 +106,36 @@ public final class ExplorationSync {
                 MapSlice.SURFACE, regions)), now);
     }
 
-    private void queueRegion(UUID player, ExplorationKey key, Subscription subscription, RegionPos pos, long now) {
+    /**
+     * The chunks to send to a client that has data of a region in its cache.
+     *
+     * @param chunks the chunks that the client can get: the explored chunks with a sample
+     * @param times  the time of the sample of each chunk, in the same order
+     * @param known  the data of the client
+     * @return the chunks with a sample after the last sample of the client; or all the chunks, when the server has
+     *         more chunks at the time of the client or before than the client has
+     */
+    static List<ChunkPos> toSend(List<ChunkPos> chunks, long[] times, ExplorationRequestPayload.Known known) {
+        int old = 0;
+        for (int i = 0; i < chunks.size(); i++) {
+            if (times[i] <= known.time()) {
+                old++;
+            }
+        }
+        if (old > known.chunks()) {
+            return chunks;
+        }
+        List<ChunkPos> newer = new ArrayList<>();
+        for (int i = 0; i < chunks.size(); i++) {
+            if (times[i] > known.time()) {
+                newer.add(chunks.get(i));
+            }
+        }
+        return newer;
+    }
+
+    private void queueRegion(UUID player, ExplorationKey key, Subscription subscription, RegionPos pos,
+            ExplorationRequestPayload.Known known, long now) {
         boolean all = allChunks.contains(player);
         // Read the mask first: a region that the player never explored costs no read of its map data.
         ExploredMask mask = all ? null : service.existingMask(key, player, pos, now);
@@ -119,13 +148,18 @@ public final class ExplorationSync {
         }
         int minX = pos.x() << MapRegion.CHUNK_SHIFT;
         int minZ = pos.z() << MapRegion.CHUNK_SHIFT;
+        List<ChunkPos> chunks = new ArrayList<>();
+        long[] times = new long[MapRegion.CHUNKS * MapRegion.CHUNKS];
         for (int z = minZ; z < minZ + MapRegion.CHUNKS; z++) {
             for (int x = minX; x < minX + MapRegion.CHUNKS; x++) {
-                if (region.sampled(x, z) != MapRegion.NEVER && (all || mask.isChunkExplored(x, z))) {
-                    subscription.pending.add(new ChunkPos(x, z));
+                long sampled = region.sampled(x, z);
+                if (sampled != MapRegion.NEVER && (all || mask.isChunkExplored(x, z))) {
+                    times[chunks.size()] = sampled;
+                    chunks.add(new ChunkPos(x, z));
                 }
             }
         }
+        subscription.pending.addAll(toSend(chunks, times, known));
     }
 
     /** True if a player gets all the chunks with a sample. */
@@ -211,7 +245,8 @@ public final class ExplorationSync {
                 ChunkPos chunk = queue.next();
                 queue.remove();
                 MapRegion region = service.region(entry.getKey(), RegionPos.ofChunk(chunk.x, chunk.z), now);
-                chunks.add(new ExplorationChunksPayload.Chunk(chunk.x, chunk.z, region.columns(chunk.x, chunk.z)));
+                chunks.add(new ExplorationChunksPayload.Chunk(chunk.x, chunk.z, region.columns(chunk.x, chunk.z),
+                        region.sampled(chunk.x, chunk.z)));
             }
             return new ExplorationChunksPayload(entry.getKey(), chunks);
         }

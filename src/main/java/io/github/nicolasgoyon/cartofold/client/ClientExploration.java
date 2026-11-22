@@ -23,6 +23,10 @@ import net.minecraft.world.level.Level;
  * <p>In a region, a chunk with no data has the sample time {@link MapRegion#NEVER}. Each change of a region increases
  * the version of the region and the version of the store: a view makes its image again when a version changes.
  *
+ * <p>A region keeps the time of the sample of each chunk on the server. The cache on the disk of the client (see
+ * {@link ClientMapCache}) keeps the regions between two games, and the next request tells the server the data that
+ * the client has (see {@link #known}).
+ *
  * <p>This class uses no class of the client: the payload handler on the common side can call it.
  */
 public final class ClientExploration {
@@ -36,15 +40,31 @@ public final class ClientExploration {
 
     private final Map<ExplorationKey, Map<RegionPos, Versioned>> dimensions = new HashMap<>();
     private long version;
+    /** Gets the regions with changes that go out of the store: the cache writes them. */
+    private Evictions evictions = (key, region) -> {
+    };
+
+    /** Gets a copy of a region with changes that goes out of the store. */
+    @FunctionalInterface
+    public interface Evictions {
+        void evicted(ExplorationKey key, MapRegion region);
+    }
 
     /** A region with the number of its changes. */
     private static final class Versioned {
         final MapRegion region;
         long version;
+        /** True if the region changed since the last write to the cache. */
+        boolean unsaved;
 
         Versioned(MapRegion region) {
             this.region = region;
         }
+    }
+
+    /** Sets the receiver of the regions with changes that go out of the store. */
+    public synchronized void onEvictions(Evictions evictions) {
+        this.evictions = evictions;
     }
 
     /** Makes an empty store. The game uses {@link #get()}. */
@@ -67,9 +87,90 @@ public final class ClientExploration {
         for (ExplorationChunksPayload.Chunk chunk : payload.chunks()) {
             RegionPos pos = RegionPos.ofChunk(chunk.x(), chunk.z());
             Versioned versioned = regions.computeIfAbsent(pos, key -> new Versioned(new MapRegion(key)));
-            versioned.region.put(chunk.x(), chunk.z(), chunk.columns(), version);
+            versioned.region.put(chunk.x(), chunk.z(), chunk.columns(), chunk.sampled());
             versioned.version = version;
+            versioned.unsaved = true;
         }
+    }
+
+    /**
+     * Puts a region from the cache in the store. When the store already has the region (the server sent chunks
+     * before the end of the read), each chunk keeps its later sample.
+     *
+     * @return true if the store changed
+     */
+    public synchronized boolean putCached(ExplorationKey key, MapRegion cached) {
+        Map<RegionPos, Versioned> regions = dimensions.computeIfAbsent(key, ignored -> new HashMap<>());
+        Versioned versioned = regions.get(cached.pos());
+        version++;
+        if (versioned == null) {
+            versioned = new Versioned(cached);
+            versioned.version = version;
+            regions.put(cached.pos(), versioned);
+            return true;
+        }
+        boolean changed = false;
+        int minX = cached.pos().x() << MapRegion.CHUNK_SHIFT;
+        int minZ = cached.pos().z() << MapRegion.CHUNK_SHIFT;
+        for (int z = minZ; z < minZ + MapRegion.CHUNKS; z++) {
+            for (int x = minX; x < minX + MapRegion.CHUNKS; x++) {
+                long time = cached.sampled(x, z);
+                long present = versioned.region.sampled(x, z);
+                if (time != MapRegion.NEVER && (present == MapRegion.NEVER || time > present)) {
+                    versioned.region.put(x, z, cached.columns(x, z), time);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) {
+            versioned.version = version;
+            versioned.unsaved = true;
+        }
+        return changed;
+    }
+
+    /**
+     * The data that the client has for a region: the time of its last sample and its number of chunks (see
+     * {@link ExplorationRequestPayload.Known}).
+     */
+    public synchronized ExplorationRequestPayload.Known known(ExplorationKey key, RegionPos pos) {
+        Versioned versioned = dimensions.getOrDefault(key, Map.of()).get(pos);
+        if (versioned == null) {
+            return ExplorationRequestPayload.Known.NONE;
+        }
+        long last = MapRegion.NEVER;
+        int chunks = 0;
+        int minX = pos.x() << MapRegion.CHUNK_SHIFT;
+        int minZ = pos.z() << MapRegion.CHUNK_SHIFT;
+        for (int z = minZ; z < minZ + MapRegion.CHUNKS; z++) {
+            for (int x = minX; x < minX + MapRegion.CHUNKS; x++) {
+                long time = versioned.region.sampled(x, z);
+                if (time != MapRegion.NEVER) {
+                    chunks++;
+                    last = Math.max(last, time);
+                }
+            }
+        }
+        return new ExplorationRequestPayload.Known(last, chunks);
+    }
+
+    /** True if the store has data of a region. */
+    public synchronized boolean has(ExplorationKey key, RegionPos pos) {
+        return dimensions.getOrDefault(key, Map.of()).containsKey(pos);
+    }
+
+    /**
+     * Copies of the regions with changes since the last call, for a write to the cache. The regions are then saved.
+     *
+     * @param consumer gets the slice and the copy of each region
+     */
+    public synchronized void takeUnsaved(Evictions consumer) {
+        dimensions.forEach((key, regions) -> regions.values().forEach(versioned -> {
+            if (versioned.unsaved) {
+                versioned.unsaved = false;
+                consumer.evicted(key, versioned.region.copy());
+            }
+        }));
     }
 
     /** The data of a region of the surface, or empty if the client has no chunk of it. */
@@ -123,7 +224,10 @@ public final class ClientExploration {
         });
         candidates.sort(Comparator.comparingLong(Candidate::version));
         for (Candidate candidate : candidates.subList(0, Math.min(excess, candidates.size()))) {
-            dimensions.get(candidate.dimension()).remove(candidate.pos());
+            Versioned removed = dimensions.get(candidate.dimension()).remove(candidate.pos());
+            if (removed != null && removed.unsaved) {
+                evictions.evicted(candidate.dimension(), removed.region);
+            }
         }
         dimensions.values().removeIf(Map::isEmpty);
         version++;

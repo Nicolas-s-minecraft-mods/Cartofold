@@ -5,8 +5,11 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.nicolasgoyon.cartofold.api.MapViewKind;
 import io.github.nicolasgoyon.cartofold.data.ExplorationKey;
+import io.github.nicolasgoyon.cartofold.data.RegionPos;
 import io.github.nicolasgoyon.cartofold.view.MapProjection;
 import io.github.nicolasgoyon.cartofold.view.MinimapLayout;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -55,7 +58,7 @@ public final class Minimap {
         // The position of this frame: the map, the layers and the waypoints move together between two ticks.
         Vec3 eye = player.getPosition(partialTick);
         MapProjection projection = new MapProjection(x, y, size, size, eye.x, eye.z,
-                MinimapLayout.scale(CartofoldClientConfig.MINIMAP_ZOOM.get()),
+                MinimapLayout.scale(CartofoldClientConfig.MINIMAP_ZOOM.get()) * MinimapSpeed.factor(),
                 MinimapLayout.mapRotation(rotate, yaw));
         float centerX = x + size / 2f;
         float centerY = y + size / 2f;
@@ -73,12 +76,20 @@ public final class Minimap {
         graphics.fill(x, y, x + size, y + size, BACKGROUND);
         graphics.flush();
         ExplorationKey slice = MapSlices.key(player);
+        // The minimap requests the regions that it shows: a minimap zoomed out by the speed shows more than the
+        // regions near the player. A band of caves also needs the regions near the player.
+        List<RegionPos> regions = new ArrayList<>(projection.regions());
         if (!slice.slice().surface()) {
-            ExplorationRequests.view(Minimap.class, slice, ExplorationRequests.regionsNear(player.getBlockX(),
-                    player.getBlockZ()));
+            for (RegionPos pos : ExplorationRequests.regionsNear(player.getBlockX(), player.getBlockZ())) {
+                if (!regions.contains(pos)) {
+                    regions.add(pos);
+                }
+            }
         }
+        ExplorationRequests.view(Minimap.class, slice, regions);
         MapView.render(graphics, slice, projection, MapViewKind.MINIMAP, layer -> true, null);
         graphics.flush();
+        EntityMarkers.render(graphics, minecraft.level.dimension(), projection, partialTick, null);
         if (CartofoldClientConfig.MINIMAP_WAYPOINTS.get()) {
             WaypointMarkers.renderMinimap(graphics, minecraft.level.dimension(), projection, round);
         }

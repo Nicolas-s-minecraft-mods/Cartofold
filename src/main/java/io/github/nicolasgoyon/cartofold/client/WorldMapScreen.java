@@ -44,6 +44,7 @@ public final class WorldMapScreen extends Screen {
     private static final double KEY_MOVE = 1.0 / 8;
     private static final int SETTINGS_WIDTH = 80;
     private static final int SLICE_WIDTH = 130;
+    private static final int SHARE_WIDTH = 60;
     /** The state of the last map: the next map opens at the same scale. */
     @Nullable
     private static WorldMapState last;
@@ -122,6 +123,10 @@ public final class WorldMapScreen extends Screen {
         addRenderableWidget(Button.builder(Component.translatable("cartofold.worldmap.layers"),
                 button -> minecraft.setScreen(new LayersScreen(this)))
                 .bounds(width - SETTINGS_WIDTH * 2 - 10, 4, SETTINGS_WIDTH, 20).build());
+        // The title is in the middle of the top: the button goes at the left, after the button of the slices.
+        addRenderableWidget(Button.builder(Component.translatable("cartofold.worldmap.share"),
+                button -> minecraft.setScreen(new ShareScreen(this)))
+                .bounds(6 + SLICE_WIDTH + 4, 4, SHARE_WIDTH, 20).build());
         sliceButton = addRenderableWidget(Button.builder(MapSlices.label(slice), button -> showSlice(
                 slice.surface() ? nextBand(0) : MapSlice.SURFACE))
                 .bounds(6, 4, SLICE_WIDTH, 20).build());
@@ -149,6 +154,7 @@ public final class WorldMapScreen extends Screen {
                 layer -> true, mouseX, mouseY).map(LayerRenderer.Hit::key).orElse(null),
                 selected == null ? Set.of() : Set.of(selected));
         MapView.render(graphics, key, projection, MapViewKind.WORLD_MAP, layer -> true, labels);
+        EntityMarkers.render(graphics, dimension, projection, partialTick, labels);
         if (CartofoldClientConfig.WORLD_MAP_WAYPOINTS.get()) {
             WaypointMarkers.renderWorldMap(graphics, dimension, projection,
                     CartofoldClientConfig.WORLD_MAP_WAYPOINT_NAMES.get() ? labels : null, mouseX, mouseY);
@@ -163,7 +169,12 @@ public final class WorldMapScreen extends Screen {
         double[] block = projection.toBlock(mouseX, mouseY);
         graphics.drawString(font, Component.translatable("cartofold.worldmap.coordinates",
                 (int) Math.floor(block[0]), (int) Math.floor(block[1])), 6, height - font.lineHeight - 4, TEXT);
-        graphics.drawCenteredString(font, title, width / 2, 6, TEXT);
+        // On a narrow screen, the buttons take the top: the title shows only between them.
+        int free = width - SETTINGS_WIDTH * 2 - 10 - (6 + SLICE_WIDTH + 4 + SHARE_WIDTH) - 8;
+        if (font.width(title) <= free) {
+            graphics.drawCenteredString(font, title, (6 + SLICE_WIDTH + 4 + SHARE_WIDTH + width - SETTINGS_WIDTH * 2
+                    - 10) / 2, 6, TEXT);
+        }
         Component hint = Component.translatable("cartofold.worldmap.hint");
         graphics.drawString(font, hint, width - font.width(hint) - 6, height - font.lineHeight - 4, HINT);
         super.render(graphics, mouseX, mouseY, partialTick);

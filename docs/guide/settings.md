@@ -25,6 +25,7 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `corner` | `TOP_LEFT` | The corner of the screen. |
 | `size` | 100 | The size in units of the screen, from 48 to 256. |
 | `zoom` | 2 | The zoom level, from 0 (far) to 4 (near). |
+| `speedZoom` | true | Zoom out the minimap when you go faster. The zoom level is then the zoom when you stop. |
 | `rotate` | false | Turn the minimap with you. |
 | `coordinates` | true | Show your coordinates. |
 | `waypoints` | true | Show the waypoints. |
@@ -59,8 +60,33 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `minDistance` | 50 | Hide the markers nearer than this distance, in blocks. |
 | `maxDistance` | 1000 | Hide the markers farther than this distance, in blocks. 0 shows all the far markers. |
 | `opacity` | 80 | The opacity of the markers, in percent, from 10 to 100. |
-| `height` | 1.0 | The height of a marker above its position, in blocks, from 0 to 64. |
-| `scale` | 1.0 | The size of the markers, from 0.5 to 4. |
+| `height` | 10.0 | The height of a marker above its position, in blocks, from 0 to 64. |
+| `scale` | 0.5 | The size of the markers, from 0.5 to 4. |
 | `names` | true | Show the names. |
 | `distances` | true | Show the distances. |
 | `hiddenLayers` | empty | The identifiers of the layers that do not show in the world. |
+
+### Entities
+
+The section `entities` selects the loaded entities on the minimap and on the map of the world. Each entity shows as a dot. The client knows only the entities near you, so the dots show only near you.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `players` | true | Show the other players, as white dots. The map of the world shows their names. A player that sneaks hides its name. |
+| `hostile` | true | Show the hostile mobs, as red dots. |
+| `passive` | true | Show the animals, the villagers and the other passive mobs, as green dots. |
+| `objects` | false | Show the items on the ground, the boats and the minecarts, as yellow dots. |
+| `height` | 24 | Show only the entities at most this number of blocks above or below you, from 0 to 512. 0 shows the entities at all heights. |
+
+## Settings of the server
+
+The file of the server is `serverconfig/cartofold-server.toml`, in the folder of the world. A change of the file goes to the players at once.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `entities.players` | true | Let the maps of the players show the other players. |
+| `entities.hostile` | true | Let the maps of the players show the hostile mobs. |
+| `entities.passive` | true | Let the maps of the players show the animals and the passive mobs. |
+| `entities.objects` | true | Let the maps of the players show the items and the vehicles. |
+
+A setting at false hides this kind of entity on the maps of all the players, for a fair game. A changed client can still see the entities near its player.

@@ -1,10 +1,13 @@
 package io.github.nicolasgoyon.cartofold.client;
 
 import io.github.nicolasgoyon.cartofold.api.MapViewKind;
+import io.github.nicolasgoyon.cartofold.view.EntityKind;
 import io.github.nicolasgoyon.cartofold.view.MarkerSizes;
 import io.github.nicolasgoyon.cartofold.view.MinimapLayout;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
@@ -50,6 +53,7 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.EnumValue<MinimapLayout.Corner> MINIMAP_CORNER;
     public static final ModConfigSpec.IntValue MINIMAP_SIZE;
     public static final ModConfigSpec.IntValue MINIMAP_ZOOM;
+    public static final ModConfigSpec.BooleanValue MINIMAP_SPEED_ZOOM;
     public static final ModConfigSpec.BooleanValue MINIMAP_ROTATE;
     public static final ModConfigSpec.BooleanValue MINIMAP_COORDINATES;
     public static final ModConfigSpec.BooleanValue MINIMAP_WAYPOINTS;
@@ -59,6 +63,9 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_LAYERS;
     public static final ModConfigSpec.EnumValue<BannerViews> BANNER_VIEWS;
     public static final ModConfigSpec.DoubleValue MARKER_SCALE;
+    /** For each kind of entity: true if the minimap and the map of the world show it. */
+    public static final Map<EntityKind, ModConfigSpec.BooleanValue> ENTITIES = new EnumMap<>(EntityKind.class);
+    public static final ModConfigSpec.IntValue ENTITIES_HEIGHT;
     public static final ModConfigSpec.BooleanValue HUD;
     public static final ModConfigSpec.BooleanValue HUD_WAYPOINTS;
     public static final ModConfigSpec.IntValue HUD_MIN_DISTANCE;
@@ -85,6 +92,8 @@ public final class CartofoldClientConfig {
         MINIMAP_ZOOM = builder.comment("The zoom level of the minimap, from 0 (far) to 4 (near).")
                 .translation("cartofold.configuration.minimap.zoom")
                 .defineInRange("zoom", 2, 0, MinimapLayout.zoomLevels() - 1);
+        MINIMAP_SPEED_ZOOM = builder.comment("Zoom out the minimap when you go faster, also in a vehicle.")
+                .translation("cartofold.configuration.minimap.speed_zoom").define("speedZoom", true);
         MINIMAP_ROTATE = builder.comment("Turn the minimap with the player. If false, the north is at the top.")
                 .translation("cartofold.configuration.minimap.rotate").define("rotate", false);
         MINIMAP_COORDINATES = builder.comment("Show the coordinates of the player under the minimap.")
@@ -127,9 +136,9 @@ public final class CartofoldClientConfig {
         HUD_OPACITY = builder.comment("The opacity of the markers, in percent.")
                 .translation("cartofold.configuration.hud.opacity").defineInRange("opacity", 80, 10, 100);
         HUD_HEIGHT = builder.comment("The height of a marker above its position, in blocks.")
-                .translation("cartofold.configuration.hud.height").defineInRange("height", 1.0, 0.0, 64.0);
+                .translation("cartofold.configuration.hud.height").defineInRange("height", 10.0, 0.0, 64.0);
         HUD_SCALE = builder.comment("The size of the markers: 1 is the normal size.")
-                .translation("cartofold.configuration.hud.scale").defineInRange("scale", 1.0, 0.5, 4.0);
+                .translation("cartofold.configuration.hud.scale").defineInRange("scale", 0.5, 0.5, 4.0);
         HUD_NAMES = builder.comment("Show the names of the markers.")
                 .translation("cartofold.configuration.hud.names").define("names", true);
         HUD_DISTANCES = builder.comment("Show the distances of the markers.")
@@ -137,6 +146,17 @@ public final class CartofoldClientConfig {
         HUD_HIDDEN_LAYERS = builder.comment("The identifiers of the layers that do not show in the world.")
                 .translation("cartofold.configuration.hud.hidden_layers")
                 .defineListAllowEmpty("hiddenLayers", List.of(), () -> "", value -> value instanceof String);
+        builder.pop();
+        builder.comment("The loaded entities on the minimap and on the map of the world. The server can stop them.")
+                .translation("cartofold.configuration.entities").push("entities");
+        for (EntityKind kind : EntityKind.values()) {
+            ENTITIES.put(kind, builder.comment("Show the " + kind.key() + ".")
+                    .translation("cartofold.configuration.entities." + kind.key())
+                    .define(kind.key(), kind != EntityKind.OBJECTS));
+        }
+        ENTITIES_HEIGHT = builder.comment("Show only the entities at most this number of blocks above or below you."
+                + " 0 shows the entities at all heights.").translation("cartofold.configuration.entities.height")
+                .defineInRange("height", 24, 0, 512);
         builder.pop();
         SPEC = builder.build();
     }

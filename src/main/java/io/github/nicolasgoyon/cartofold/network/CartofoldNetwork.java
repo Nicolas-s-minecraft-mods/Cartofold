@@ -2,6 +2,8 @@ package io.github.nicolasgoyon.cartofold.network;
 
 import io.github.nicolasgoyon.cartofold.client.ClientExploration;
 import io.github.nicolasgoyon.cartofold.client.ClientLayers;
+import io.github.nicolasgoyon.cartofold.client.ClientMapCache;
+import io.github.nicolasgoyon.cartofold.client.ClientRules;
 import io.github.nicolasgoyon.cartofold.client.ClientWaypoints;
 import io.github.nicolasgoyon.cartofold.paper.SurveyMapLookup;
 import io.github.nicolasgoyon.cartofold.server.ExplorationService;
@@ -16,7 +18,7 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
  */
 public final class CartofoldNetwork {
     /** The version of the payloads. Increase it when a payload changes. */
-    public static final String VERSION = "7";
+    public static final String VERSION = "10";
 
     private CartofoldNetwork() {
     }
@@ -29,6 +31,10 @@ public final class CartofoldNetwork {
                 (payload, context) -> ClientExploration.get().accept(payload));
         registrar.playToServer(WaypointActionPayload.TYPE, WaypointActionPayload.STREAM_CODEC,
                 WaypointService::onAction);
+        registrar.playToClient(ServerRulesPayload.TYPE, ServerRulesPayload.STREAM_CODEC,
+                (payload, context) -> ClientRules.set(payload));
+        registrar.playToClient(MapWorldPayload.TYPE, MapWorldPayload.STREAM_CODEC,
+                (payload, context) -> ClientMapCache.open(payload.world()));
         registrar.playToClient(WaypointsPayload.TYPE, WaypointsPayload.STREAM_CODEC,
                 (payload, context) -> ClientWaypoints.get().set(payload.waypoints()));
         registrar.playToClient(LayerPayload.TYPE, LayerPayload.STREAM_CODEC,

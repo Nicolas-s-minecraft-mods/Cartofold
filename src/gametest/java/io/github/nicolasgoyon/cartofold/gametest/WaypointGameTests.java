@@ -39,9 +39,11 @@ public final class WaypointGameTests {
 
         service.apply(player, new WaypointActionPayload(waypoint, false));
         helper.assertTrue(service.waypoints(player.getUUID()).equals(List.of(waypoint)), "The player has its waypoint");
-        Waypoint renamed = new Waypoint(waypoint.id(), "Base", 0x00FF00, level.dimension(), home, false);
+        Waypoint renamed = new Waypoint(waypoint.id(), "Base", 0x00FF00, level.dimension(), home, false)
+                .withDistances(10, 0);
         service.apply(player, new WaypointActionPayload(renamed, false));
-        helper.assertTrue(service.waypoints(player.getUUID()).equals(List.of(renamed)), "The waypoint changes");
+        helper.assertTrue(service.waypoints(player.getUUID()).equals(List.of(renamed)),
+                "The waypoint changes, with its distances");
 
         player.setPos(home.getX() + 0.5, home.getY(), home.getZ() + 0.5);
         WaypointService.onDeath(new LivingDeathEvent(player, level.damageSources().generic()));

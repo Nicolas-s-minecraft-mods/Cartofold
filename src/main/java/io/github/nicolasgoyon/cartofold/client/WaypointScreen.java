@@ -6,9 +6,11 @@ import io.github.nicolasgoyon.cartofold.waypoint.Waypoints;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -17,11 +19,16 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-/** Adds or changes a waypoint: its name, its position and its color. A waypoint that exists can also be removed. */
+/**
+ * Adds or changes a waypoint: its name, its position, its color and its distances in the world. An empty distance
+ * follows the settings of the client. A waypoint that exists can also be removed.
+ */
 public final class WaypointScreen extends Screen {
     private static final int FIELD_WIDTH = 200;
     private static final int COORDINATE_WIDTH = 64;
     private static final int ROW = 24;
+    /** The space above the fields of the distances, for their names. */
+    private static final int LABEL = 11;
 
     @Nullable
     private final Screen parent;
@@ -36,6 +43,10 @@ public final class WaypointScreen extends Screen {
     private EditBox y;
     @Nullable
     private EditBox z;
+    @Nullable
+    private EditBox minDistance;
+    @Nullable
+    private EditBox maxDistance;
 
     private WaypointScreen(@Nullable Screen parent, Waypoint original, boolean exists) {
         super(Component.translatable(exists ? "cartofold.waypoint.edit" : "cartofold.waypoint.add"));
@@ -62,7 +73,7 @@ public final class WaypointScreen extends Screen {
     @Override
     protected void init() {
         int left = width / 2 - FIELD_WIDTH / 2;
-        int top = height / 2 - ROW * 3;
+        int top = top();
         name = addRenderableWidget(new EditBox(font, left, top, FIELD_WIDTH, 20,
                 Component.translatable("cartofold.waypoint.name")));
         name.setMaxLength(Waypoints.MAX_NAME);
@@ -73,8 +84,13 @@ public final class WaypointScreen extends Screen {
         z = coordinate(left + (COORDINATE_WIDTH + gap) * 2, top + ROW, original.pos().getZ(), "Z");
         addRenderableWidget(Button.builder(Component.translatable("cartofold.waypoint.color"), button -> nextColor())
                 .bounds(left, top + ROW * 2, FIELD_WIDTH, 20).build());
+        int half = (FIELD_WIDTH - 4) / 2;
+        minDistance = distance(left, top + ROW * 3 + LABEL, half, original.minDistance(),
+                CartofoldClientConfig.HUD_MIN_DISTANCE.get(), "cartofold.waypoint.min_distance");
+        maxDistance = distance(left + half + 4, top + ROW * 3 + LABEL, half, original.maxDistance(),
+                CartofoldClientConfig.HUD_MAX_DISTANCE.get(), "cartofold.waypoint.max_distance");
         int buttonWidth = exists ? (FIELD_WIDTH - 8) / 3 : (FIELD_WIDTH - 4) / 2;
-        int buttonY = top + ROW * 3 + 8;
+        int buttonY = top + ROW * 4 + LABEL + 8;
         addRenderableWidget(Button.builder(Component.translatable("cartofold.waypoint.save"), button -> save())
                 .bounds(left, buttonY, buttonWidth, 20).build());
         int next = left + buttonWidth + 4;
@@ -94,6 +110,33 @@ public final class WaypointScreen extends Screen {
         box.setFilter(text -> text.matches("-?\\d*"));
         box.setValue(Integer.toString(value));
         return box;
+    }
+
+    /** The top of the first field. */
+    private int top() {
+        return height / 2 - ROW * 3 - LABEL;
+    }
+
+    /**
+     * A field of a distance. An empty field follows the settings: its hint gives the distance of the settings.
+     *
+     * @param value    the distance of the waypoint, or {@link Waypoint#DEFAULT}
+     * @param settings the distance of the settings
+     */
+    private EditBox distance(int left, int top, int width, int value, int settings, String key) {
+        EditBox box = addRenderableWidget(new EditBox(font, left, top, width, 20, Component.translatable(key)));
+        box.setMaxLength(6);
+        box.setFilter(text -> text.matches("\\d*"));
+        box.setValue(value == Waypoint.DEFAULT ? "" : Integer.toString(value));
+        box.setHint(Component.translatable("cartofold.waypoint.default_distance", settings)
+                .withStyle(ChatFormatting.DARK_GRAY));
+        box.setTooltip(Tooltip.create(Component.translatable(key + ".tooltip")));
+        return box;
+    }
+
+    /** The distance of a field, or {@link Waypoint#DEFAULT} for an empty field. */
+    private static int distance(@Nullable EditBox box) {
+        return box == null || box.getValue().isEmpty() ? Waypoint.DEFAULT : parse(box, Waypoint.DEFAULT);
     }
 
     private void nextColor() {
@@ -121,7 +164,8 @@ public final class WaypointScreen extends Screen {
                 parse(z, original.pos().getZ()));
         String text = name == null ? original.name() : name.getValue();
         boolean death = original.death() && text.equals(WaypointMarkers.name(original).getString());
-        send(new Waypoint(original.id(), death ? "" : text, color, original.dimension(), pos, death), false);
+        send(new Waypoint(original.id(), death ? "" : text, color, original.dimension(), pos, death,
+                distance(minDistance), distance(maxDistance)), false);
     }
 
     private void send(Waypoint waypoint, boolean remove) {
@@ -133,8 +177,13 @@ public final class WaypointScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         int left = width / 2 - FIELD_WIDTH / 2;
-        int top = height / 2 - ROW * 3;
+        int top = top();
         graphics.drawCenteredString(font, title, width / 2, top - 20, 0xFFFFFFFF);
+        int half = (FIELD_WIDTH - 4) / 2;
+        graphics.drawString(font, Component.translatable("cartofold.waypoint.min_distance"), left, top + ROW * 3,
+                0xFFA0A0A0);
+        graphics.drawString(font, Component.translatable("cartofold.waypoint.max_distance"), left + half + 4,
+                top + ROW * 3, 0xFFA0A0A0);
         graphics.fill(left + FIELD_WIDTH + 6, top + ROW * 2, left + FIELD_WIDTH + 26, top + ROW * 2 + 20,
                 0xFF000000 | color);
     }
