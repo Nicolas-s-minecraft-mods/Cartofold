@@ -24,6 +24,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -286,6 +287,13 @@ public final class MapUpdates {
         while (job.checking < CHECKS && !job.waiting.isEmpty()) {
             ChunkPos chunk = job.waiting.poll();
             if (job.level.getChunkSource().getChunkNow(chunk.x, chunk.z) != null) {
+                job.ready.add(chunk);
+                continue;
+            }
+            // A full chunk that unloads now is still in the memory, and maybe not yet on the disk: the check of the
+            // disk can then find no full chunk. The ticket of the load keeps this chunk.
+            ChunkHolder holder = job.level.getChunkSource().chunkMap.getVisibleChunkIfPresent(chunk.toLong());
+            if (holder != null && holder.getPersistedStatus() == ChunkStatus.FULL) {
                 job.ready.add(chunk);
                 continue;
             }
