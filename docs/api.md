@@ -198,6 +198,21 @@ CartofoldClientLayers.register(new MapLayerRenderer() {
 });
 ```
 
+## Kinds of entities
+
+The minimap and the map of the world show the loaded entities near the player as dots. A mod of the client can give its own entities a kind with its own color, for example the caravans of the mod:
+
+```java
+EntityMarkerKinds.register(new EntityMarkerKinds.Kind(
+        ResourceLocation.fromNamespaceAndPath("mymod", "caravans"),
+        Component.literal("Caravans"), 0xC08040,
+        entity -> entity instanceof CaravanEntity));
+```
+
+- The entity keeps the rules of its kind of Cartofold (players, hostile, passive, villagers, objects): the settings of the player and of the server for this kind select if the maps show it.
+- The player can hide a kind of a mod with the setting `entities.hiddenKinds`.
+- The test of the kind runs for each loaded entity at each draw: keep it fast. The first kind that matches counts.
+
 ## Open the map of the world
 
 A screen of a mod opens the map of the world at a position with `CartofoldWorldMap`. The map stays at this position until the player moves it. Escape then shows the screen of the mod again.
