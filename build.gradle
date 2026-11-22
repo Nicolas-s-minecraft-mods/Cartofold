@@ -215,7 +215,7 @@ publishing {
         // GitHub Packages, for the mods that use the API of Cartofold.
         maven {
             name = 'GitHubPackages'
-            url = uri('https://maven.pkg.github.com/nicolas-goyon/cartofold')
+            url = uri('https://maven.pkg.github.com/nicolas-s-minecraft-mods/cartofold')
             credentials {
                 username = providers.environmentVariable('GITHUB_ACTOR').getOrElse('')
                 password = providers.environmentVariable('GITHUB_TOKEN').getOrElse('')

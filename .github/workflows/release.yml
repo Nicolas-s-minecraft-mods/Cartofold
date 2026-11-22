@@ -173,7 +173,7 @@ jobs:
   modrinth:
     name: Modrinth
     needs: [version, github-release]
-    if: github.repository_owner == 'nicolas-goyon'
+    if: github.repository_owner == 'Nicolas-s-minecraft-mods'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

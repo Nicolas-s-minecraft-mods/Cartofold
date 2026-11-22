@@ -151,7 +151,7 @@ jobs:
   publish-dev:
     name: Publish the dev build
     needs: [version, scripts, build, unit-tests, gametests]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && github.repository_owner == 'nicolas-goyon'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop' && github.repository_owner == 'Nicolas-s-minecraft-mods'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
