@@ -1,6 +1,7 @@
 package io.github.nicolasgoyon.cartofold.client;
 
 import io.github.nicolasgoyon.cartofold.Cartofold;
+import io.github.nicolasgoyon.cartofold.view.MinimapLayout;
 import io.github.nicolasgoyon.cartofold.view.SpeedZoom;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -57,7 +58,16 @@ public final class MinimapSpeed {
         }
         last = entity;
         lastPos = pos;
-        level = SpeedZoom.level(speed, level);
+        level = SpeedZoom.level(speed, level, CartofoldClientConfig.speedZoom());
+    }
+
+    /**
+     * The scale of the minimap for this frame: the scale of the zoom level of the player with the factor of the speed,
+     * but not farther than the setting {@code speedZoomLimit}.
+     */
+    public static double scale() {
+        double base = MinimapLayout.scale(CartofoldClientConfig.MINIMAP_ZOOM.get());
+        return SpeedZoom.scale(base, factor(), MinimapLayout.scale(CartofoldClientConfig.MINIMAP_SPEED_ZOOM_LIMIT.get()));
     }
 
     /**
@@ -66,7 +76,8 @@ public final class MinimapSpeed {
      */
     public static double factor() {
         long now = Util.getMillis();
-        double target = CartofoldClientConfig.MINIMAP_SPEED_ZOOM.get() ? SpeedZoom.factor(level) : 1;
+        double target = CartofoldClientConfig.MINIMAP_SPEED_ZOOM.get()
+                ? SpeedZoom.factor(level, CartofoldClientConfig.speedZoom()) : 1;
         factor = lastDraw < 0 ? target : SpeedZoom.approach(factor, target, (now - lastDraw) / 1000.0);
         lastDraw = now;
         return factor;

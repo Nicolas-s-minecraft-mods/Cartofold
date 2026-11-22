@@ -95,7 +95,8 @@ public final class CartofoldClient {
     }
 
     private static void zoom(int step) {
-        int zoom = Math.clamp(CartofoldClientConfig.MINIMAP_ZOOM.get() + step, 0, MinimapLayout.zoomLevels() - 1);
+        int zoom = Math.clamp(CartofoldClientConfig.MINIMAP_ZOOM.get() + step, MinimapLayout.MIN_ZOOM,
+                MinimapLayout.MAX_ZOOM);
         CartofoldClientConfig.MINIMAP_ZOOM.set(zoom);
         CartofoldClientConfig.SPEC.save();
     }

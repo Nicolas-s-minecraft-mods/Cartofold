@@ -4,6 +4,7 @@ import io.github.nicolasgoyon.cartofold.api.MapViewKind;
 import io.github.nicolasgoyon.cartofold.view.EntityKind;
 import io.github.nicolasgoyon.cartofold.view.MarkerSizes;
 import io.github.nicolasgoyon.cartofold.view.MinimapLayout;
+import io.github.nicolasgoyon.cartofold.view.SpeedZoom;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +48,35 @@ public final class CartofoldClientConfig {
         }
     }
 
+    /**
+     * The resolution of the land on the minimap, on the map of the world and in the map frames. A lower resolution
+     * uses smaller textures: it uses less memory and less time to make the textures.
+     */
+    public enum Resolution implements TranslatableEnum {
+        /** The most detail that the screen can show. */
+        FULL(0),
+        /** One pixel of the texture for 2 x 2 pixels of the full resolution. */
+        HALF(1),
+        /** One pixel of the texture for 4 x 4 pixels of the full resolution. */
+        QUARTER(2);
+
+        private final int lodOffset;
+
+        Resolution(int lodOffset) {
+            this.lodOffset = lodOffset;
+        }
+
+        /** The number of levels of detail to add to the level of detail of the full resolution. */
+        public int lodOffset() {
+            return lodOffset;
+        }
+
+        @Override
+        public Component getTranslatedName() {
+            return Component.translatable("cartofold.configuration.maps.resolution." + name().toLowerCase(Locale.ROOT));
+        }
+    }
+
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.BooleanValue MINIMAP;
     public static final ModConfigSpec.EnumValue<Shape> MINIMAP_SHAPE;
@@ -54,6 +84,10 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.IntValue MINIMAP_SIZE;
     public static final ModConfigSpec.IntValue MINIMAP_ZOOM;
     public static final ModConfigSpec.BooleanValue MINIMAP_SPEED_ZOOM;
+    public static final ModConfigSpec.DoubleValue MINIMAP_SPEED_ZOOM_START;
+    public static final ModConfigSpec.DoubleValue MINIMAP_SPEED_ZOOM_FULL;
+    public static final ModConfigSpec.DoubleValue MINIMAP_SPEED_ZOOM_OUT;
+    public static final ModConfigSpec.IntValue MINIMAP_SPEED_ZOOM_LIMIT;
     public static final ModConfigSpec.BooleanValue MINIMAP_ROTATE;
     public static final ModConfigSpec.BooleanValue MINIMAP_COORDINATES;
     public static final ModConfigSpec.BooleanValue MINIMAP_WAYPOINTS;
@@ -63,6 +97,7 @@ public final class CartofoldClientConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> HIDDEN_LAYERS;
     public static final ModConfigSpec.EnumValue<BannerViews> BANNER_VIEWS;
     public static final ModConfigSpec.DoubleValue MARKER_SCALE;
+    public static final ModConfigSpec.EnumValue<Resolution> RESOLUTION;
     /** For each kind of entity: true if the minimap and the map of the world show it. */
     public static final Map<EntityKind, ModConfigSpec.BooleanValue> ENTITIES = new EnumMap<>(EntityKind.class);
     public static final ModConfigSpec.IntValue ENTITIES_HEIGHT;
@@ -89,11 +124,25 @@ public final class CartofoldClientConfig {
                 .defineEnum("corner", MinimapLayout.Corner.TOP_LEFT);
         MINIMAP_SIZE = builder.comment("The size of the minimap, in units of the screen.")
                 .translation("cartofold.configuration.minimap.size").defineInRange("size", 100, 48, 256);
-        MINIMAP_ZOOM = builder.comment("The zoom level of the minimap, from 0 (far) to 4 (near).")
-                .translation("cartofold.configuration.minimap.zoom")
-                .defineInRange("zoom", 2, 0, MinimapLayout.zoomLevels() - 1);
+        MINIMAP_ZOOM = builder.comment("The zoom level of the minimap, from -2 (far) to 4 (near). Each level doubles the"
+                + " size of the land.").translation("cartofold.configuration.minimap.zoom")
+                .defineInRange("zoom", 2, MinimapLayout.MIN_ZOOM, MinimapLayout.MAX_ZOOM);
         MINIMAP_SPEED_ZOOM = builder.comment("Zoom out the minimap when you go faster, also in a vehicle.")
                 .translation("cartofold.configuration.minimap.speed_zoom").define("speedZoom", true);
+        MINIMAP_SPEED_ZOOM_START = builder.comment("The speed of the first zoom out, in blocks each second."
+                + " A walk is about 4.3, a sprint about 5.6.")
+                .translation("cartofold.configuration.minimap.speed_zoom_start")
+                .defineInRange("speedZoomStart", SpeedZoom.Settings.DEFAULT.startSpeed(), 0.0, 100.0);
+        MINIMAP_SPEED_ZOOM_FULL = builder.comment("The speed of the strongest zoom out, in blocks each second."
+                + " An elytra is about 30.").translation("cartofold.configuration.minimap.speed_zoom_full")
+                .defineInRange("speedZoomFull", SpeedZoom.Settings.DEFAULT.fullSpeed(), 0.0, 200.0);
+        MINIMAP_SPEED_ZOOM_OUT = builder.comment("The strongest zoom out: 5 shows 5 times more land on each side.")
+                .translation("cartofold.configuration.minimap.speed_zoom_out")
+                .defineInRange("speedZoomOut", SpeedZoom.Settings.DEFAULT.zoomOut(), 1.0, 16.0);
+        MINIMAP_SPEED_ZOOM_LIMIT = builder.comment("The farthest zoom level of the zoom with the speed, from -2 (far)"
+                + " to 4 (near).").translation("cartofold.configuration.minimap.speed_zoom_limit")
+                .defineInRange("speedZoomLimit", MinimapLayout.MIN_ZOOM, MinimapLayout.MIN_ZOOM,
+                        MinimapLayout.MAX_ZOOM);
         MINIMAP_ROTATE = builder.comment("Turn the minimap with the player. If false, the north is at the top.")
                 .translation("cartofold.configuration.minimap.rotate").define("rotate", false);
         MINIMAP_COORDINATES = builder.comment("Show the coordinates of the player under the minimap.")
@@ -121,6 +170,11 @@ public final class CartofoldClientConfig {
         MARKER_SCALE = builder.comment("The scale of the markers, of their names and of the arrow of the player.")
                 .translation("cartofold.configuration.markers.scale")
                 .defineInRange("scale", 1.0, MarkerSizes.MIN_SCALE, MarkerSizes.MAX_SCALE);
+        builder.pop();
+        builder.translation("cartofold.configuration.maps").push("maps");
+        RESOLUTION = builder.comment("The resolution of the land on the minimap, on the map of the world and in the map"
+                + " frames. A lower resolution uses less memory.").translation("cartofold.configuration.maps.resolution")
+                .defineEnum("resolution", Resolution.FULL);
         builder.pop();
         builder.translation("cartofold.configuration.hud").push("hud");
         HUD = builder.comment("Show the waypoints and the markers in the world.")
@@ -159,6 +213,12 @@ public final class CartofoldClientConfig {
                 .defineInRange("height", 24, 0, 512);
         builder.pop();
         SPEC = builder.build();
+    }
+
+    /** The settings of the zoom with the speed. */
+    public static SpeedZoom.Settings speedZoom() {
+        return new SpeedZoom.Settings(MINIMAP_SPEED_ZOOM_START.get(), MINIMAP_SPEED_ZOOM_FULL.get(),
+                MINIMAP_SPEED_ZOOM_OUT.get());
     }
 
     private CartofoldClientConfig() {

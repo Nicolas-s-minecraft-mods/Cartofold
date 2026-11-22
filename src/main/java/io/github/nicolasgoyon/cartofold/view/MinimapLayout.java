@@ -8,8 +8,12 @@ import net.neoforged.neoforge.common.TranslatableEnum;
 public final class MinimapLayout {
     /** The space between the minimap and the sides of the screen, in units of the screen. */
     public static final int MARGIN = 6;
-    /** The scales of the zoom levels: the number of units of the screen for one block. */
-    private static final double[] ZOOMS = {0.25, 0.5, 1, 2, 4};
+    /** The farthest zoom level: one unit of the screen shows 16 x 16 blocks. */
+    public static final int MIN_ZOOM = -2;
+    /** The nearest zoom level: one block takes 4 x 4 units of the screen. */
+    public static final int MAX_ZOOM = 4;
+    /** The scales of the zoom levels from {@link #MIN_ZOOM}: the number of units of the screen for one block. */
+    private static final double[] ZOOMS = {1.0 / 16, 1.0 / 8, 0.25, 0.5, 1, 2, 4};
 
     /** The corner of the screen of the minimap. */
     public enum Corner implements TranslatableEnum {
@@ -37,14 +41,12 @@ public final class MinimapLayout {
     private MinimapLayout() {
     }
 
-    /** The number of zoom levels. */
-    public static int zoomLevels() {
-        return ZOOMS.length;
-    }
-
-    /** The scale of a zoom level. A level out of the range gives the nearest level. */
+    /**
+     * The scale of a zoom level, from {@link #MIN_ZOOM} to {@link #MAX_ZOOM}. Each level doubles the scale of the level
+     * before it. A level out of the range gives the nearest level.
+     */
     public static double scale(int zoom) {
-        return ZOOMS[Math.clamp(zoom, 0, ZOOMS.length - 1)];
+        return ZOOMS[Math.clamp(zoom, MIN_ZOOM, MAX_ZOOM) - MIN_ZOOM];
     }
 
     /**

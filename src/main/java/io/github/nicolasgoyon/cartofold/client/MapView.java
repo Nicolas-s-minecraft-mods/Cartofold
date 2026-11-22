@@ -12,6 +12,7 @@ import io.github.nicolasgoyon.cartofold.api.MapViewKind;
 import io.github.nicolasgoyon.cartofold.data.ExplorationKey;
 import io.github.nicolasgoyon.cartofold.data.MapRegion;
 import io.github.nicolasgoyon.cartofold.data.RegionPos;
+import io.github.nicolasgoyon.cartofold.tile.TileImage;
 import io.github.nicolasgoyon.cartofold.view.MapProjection;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -75,7 +76,8 @@ public final class MapView {
     public static void render(GuiGraphics graphics, ExplorationKey slice, MapProjection projection,
             MapViewKind kind, Predicate<ResourceLocation> layers, @Nullable MapLabels labels) {
         ResourceKey<Level> dimension = slice.dimension();
-        int lod = projection.lod(Minecraft.getInstance().getWindow().getGuiScale());
+        int lod = Math.min(projection.lod(Minecraft.getInstance().getWindow().getGuiScale())
+                + CartofoldClientConfig.RESOLUTION.get().lodOffset(), TileImage.LODS - 1);
         graphics.enableScissor((int) Math.floor(projection.x()), (int) Math.floor(projection.y()),
                 (int) Math.ceil(projection.x() + projection.width()),
                 (int) Math.ceil(projection.y() + projection.height()));
