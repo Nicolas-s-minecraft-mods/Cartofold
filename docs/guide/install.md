@@ -9,7 +9,7 @@ Cartofold needs no other mod.
 
 ## Download
 
-Download the mod from [Modrinth](https://modrinth.com/project/cartofold) or from the [GitHub Releases](https://github.com/Nicolas-s-minecraft-mods/Cartofold/releases).
+Download the mod from [Modrinth](https://modrinth.com/project/cartofold), from [CurseForge](https://www.curseforge.com/projects/1823712) or from the [GitHub Releases](https://github.com/Nicolas-s-minecraft-mods/Cartofold/releases). CurseForge has the stable versions only.
 
 Modrinth has two channels:
 
