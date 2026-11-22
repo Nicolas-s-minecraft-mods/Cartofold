@@ -10,9 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -66,18 +69,33 @@ public final class ServerRules {
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            PacketDistributor.sendToPlayer(player, rules());
+            send(player, rules());
             if (world != null) {
-                PacketDistributor.sendToPlayer(player, new MapWorldPayload(world));
+                send(player, new MapWorldPayload(world));
             }
         }
     }
 
     /** After a change of the file of the settings of the server, all the players get the new rules. */
     public static void onConfigReloading(ModConfigEvent.Reloading event) {
-        if (event.getConfig().getSpec() == CartofoldServerConfig.SPEC
-                && ServerLifecycleHooks.getCurrentServer() != null) {
-            PacketDistributor.sendToAllPlayers(rules());
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (event.getConfig().getSpec() == CartofoldServerConfig.SPEC && server != null) {
+            ServerRulesPayload rules = rules();
+            server.getPlayerList().getPlayers().forEach(player -> send(player, rules));
         }
+    }
+
+    /**
+     * Sends a payload to a player with Cartofold. A fake player, a mock player of a test or a client with no Cartofold
+     * has no channel for the payload: it gets nothing.
+     *
+     * @return true if the player got the payload
+     */
+    static boolean send(ServerPlayer player, CustomPacketPayload payload) {
+        if (player instanceof FakePlayer || !player.connection.hasChannel(payload.type())) {
+            return false;
+        }
+        PacketDistributor.sendToPlayer(player, payload);
+        return true;
     }
 }

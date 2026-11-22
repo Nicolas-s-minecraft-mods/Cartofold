@@ -114,4 +114,25 @@ public final class EntityGameTests {
         }
         helper.succeed();
     }
+
+    /**
+     * A mock player with no Cartofold channel (the players of the GameTests of the other mods) joins with no error: the
+     * login sends it no payload of Cartofold.
+     */
+    // The GameTests of the other mods use this deprecated method: the test does the same.
+    @SuppressWarnings("removal")
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void playerWithNoChannelJoinsWithNoError(GameTestHelper helper) {
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+
+        helper.assertFalse(player.connection.hasChannel(io.github.nicolasgoyon.cartofold.network.ServerRulesPayload.TYPE),
+                "The mock player has no channel of Cartofold");
+        net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent login =
+                new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(player);
+        ServerRules.onPlayerLoggedIn(login);
+        ServerPlayer fake = FakePlayerFactory.get(helper.getLevel(),
+                new GameProfile(UUID.randomUUID(), "cartofold_login_fake"));
+        ServerRules.onPlayerLoggedIn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(fake));
+        helper.succeed();
+    }
 }
