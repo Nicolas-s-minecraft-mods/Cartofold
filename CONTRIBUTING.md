@@ -16,6 +16,16 @@
 5. The CI must pass before the merge. The check **Title and version** refuses a title with no bump marker, and its summary gives the version after the merge.
 6. Use "Squash and merge": the title of the pull request becomes the title of the commit on `develop`. Delete the branch after the merge.
 
+## Issues and project
+
+The open issues of all the repositories of the organization are in the project [Mods project](https://github.com/orgs/Nicolas-s-minecraft-mods/projects/2). The workflow **Project** runs each hour and after each change of an issue of this repository. It adds the open issues to the project and reads these lines in the description of each issue:
+
+- `Estimate: 6h`: the work that is necessary, in hours. The workflow sets the field **Estimate** of the project.
+- `Blocked by: #12, Folkhold#597`: the issues that must close before this issue can start.
+- `Blocks: Folkhold#597`: the issues that wait for this issue.
+
+An issue is `#12` (same repository), `Folkhold#597` (same organization), `owner/repo#12` or the URL of the issue. The lines can be in a list or in bold. The workflow only adds: to remove a dependency or an item, use the issue or the project. The script is `scripts/project_sync.py`. The secret `PROJECT_TOKEN` of the organization gives the permissions of the script.
+
 ## Build and tests
 
 - `./gradlew build`: compiles, checks the format (Spotless) and the translations, runs Error Prone and the unit tests (JUnit).
