@@ -24,8 +24,12 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | `shape` | `SQUARE` | `SQUARE` or `ROUND`. |
 | `corner` | `TOP_LEFT` | The corner of the screen. |
 | `size` | 100 | The size in units of the screen, from 48 to 256. |
-| `zoom` | 2 | The zoom level, from 0 (far) to 4 (near). |
+| `zoom` | 2 | The zoom level, from -2 (far) to 4 (near). Each level doubles the size of the land: -2 shows 16 blocks in one unit of the screen. |
 | `speedZoom` | true | Zoom out the minimap when you go faster. The zoom level is then the zoom when you stop. |
+| `speedZoomStart` | 0.5 | The speed of the first zoom out, in blocks each second. A walk is about 4.3, a sprint about 5.6. |
+| `speedZoomFull` | 15.0 | The speed of the strongest zoom out, in blocks each second. An elytra is about 30. |
+| `speedZoomOut` | 5.0 | The strongest zoom out, from 1 to 16: 5 shows 5 times more land on each side. |
+| `speedZoomLimit` | -2 | The zoom with the speed does not go farther than this zoom level. |
 | `rotate` | false | Turn the minimap with you. |
 | `coordinates` | true | Show your coordinates. |
 | `waypoints` | true | Show the waypoints. |
@@ -43,6 +47,12 @@ Open the settings from the list of the mods, or with the button **Settings** of 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `scale` | 1.0 | The scale of the markers, of their names and of the arrow of the player, from 0.5 to 3. |
+
+### Maps
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `resolution` | `FULL` | The resolution of the land on the minimap, on the map of the world and in the map frames: `FULL`, `HALF` or `QUARTER`. A lower resolution uses less memory. |
 
 ### Layers
 

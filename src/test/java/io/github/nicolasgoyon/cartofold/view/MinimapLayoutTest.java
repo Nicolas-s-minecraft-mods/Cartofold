@@ -21,9 +21,18 @@ class MinimapLayoutTest {
 
     @Test
     void zoomLevelsStayInTheRange() {
-        assertEquals(0.25, MinimapLayout.scale(-3), EPSILON);
+        assertEquals(1.0 / 16, MinimapLayout.scale(-9), EPSILON);
         assertEquals(1, MinimapLayout.scale(2), EPSILON);
         assertEquals(4, MinimapLayout.scale(99), EPSILON);
+    }
+
+    @Test
+    void eachZoomLevelDoublesTheScale() {
+        for (int zoom = MinimapLayout.MIN_ZOOM + 1; zoom <= MinimapLayout.MAX_ZOOM; zoom++) {
+            assertEquals(2 * MinimapLayout.scale(zoom - 1), MinimapLayout.scale(zoom), EPSILON);
+        }
+        // The levels of the old settings (0 to 4) keep their scales.
+        assertEquals(0.25, MinimapLayout.scale(0), EPSILON);
     }
 
     @Test
