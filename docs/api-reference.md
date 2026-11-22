@@ -158,6 +158,8 @@ Cartofold posts this event on `NeoForge.EVENT_BUS`, on the server thread. It com
 
 `PaperMapMarkers.isSurveyMap(ItemStack stack)` tells if an item has the tag `PaperMapMarkers.SURVEY_MAPS` (`cartofold:survey_maps`).
 
+`PaperMapMarkers.targetMap(ServerLevel level, BlockPos target, Holder<MapDecorationType> icon, Component name, int scale)` gives a new survey map with the target at its center and a marker with the icon and the name. The scale goes from 0 to 4. `PaperMapMarkers.target(MinecraftServer server, ItemStack stack)` gives the target of a map, or empty. `PaperMapMarkers.clearTarget(MinecraftServer server, ItemStack stack)` removes the target of a map.
+
 ### `PaperMarkerSource`
 
 A kind of block that marks the survey maps. A record.

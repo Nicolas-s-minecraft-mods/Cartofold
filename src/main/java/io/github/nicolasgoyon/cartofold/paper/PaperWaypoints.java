@@ -123,7 +123,8 @@ public final class PaperWaypoints {
             return;
         }
         for (SurveyMarker marker : data.markers()) {
-            if (!level.isLoaded(marker.pos())) {
+            // A target has no block: it stays until the mod that made it removes it.
+            if (PaperTargets.isTarget(marker) || !level.isLoaded(marker.pos())) {
                 continue;
             }
             PaperMarkerSource source = SOURCES.get(marker.source());

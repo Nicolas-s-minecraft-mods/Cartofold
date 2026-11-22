@@ -57,4 +57,38 @@ public final class SurveyMapGameTests {
         helper.assertTrue(px >= 0 && px < 128 && pz >= 0 && pz < 128, "The player is on the map");
         helper.succeed();
     }
+
+    /**
+     * A map of a target has the target at its center with a marker, and the name of the target. The check of the markers
+     * keeps the marker, a move keeps it in the area, and the mod can remove it.
+     */
+    @GameTest(template = "empty", timeoutTicks = 20)
+    public static void targetMapPointsToItsTarget(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        net.minecraft.core.BlockPos target = helper.absolutePos(new net.minecraft.core.BlockPos(1, 2, 1));
+        net.minecraft.network.chat.Component name = net.minecraft.network.chat.Component.literal("Old ruins");
+
+        ItemStack stack = io.github.nicolasgoyon.cartofold.api.PaperMapMarkers.targetMap(level, target,
+                io.github.nicolasgoyon.cartofold.paper.CartofoldMapDecorations.WAYPOINT, name, 1);
+
+        SurveyMapData data = SurveyMapItem.data(level.getServer(), stack);
+        helper.assertTrue(data != null, "The item has a map");
+        helper.assertTrue(data.centerX() == target.getX() && data.centerZ() == target.getZ(),
+                "The target is at the center");
+        helper.assertTrue(io.github.nicolasgoyon.cartofold.api.PaperMapMarkers.target(level.getServer(), stack)
+                .equals(java.util.Optional.of(target)), "The map has the target");
+        helper.assertTrue(data.markers().getFirst().name().equals("Old ruins"), "The marker has the name");
+        helper.assertTrue(stack.getHoverName().getString().contains("Old ruins"), "The item has the name");
+        io.github.nicolasgoyon.cartofold.paper.PaperWaypoints.check(level, data);
+        helper.assertTrue(data.markers().size() == 1, "The check of the markers keeps the target");
+        helper.assertTrue(data.moved(data.centerX() + 64, data.centerZ(), data.scale()).markers().size() == 1,
+                "A move keeps the target in the area");
+        helper.assertTrue(data.moved(data.centerX() + 100_000, data.centerZ(), data.scale()).markers().isEmpty(),
+                "A move far away loses the target");
+        helper.assertTrue(io.github.nicolasgoyon.cartofold.api.PaperMapMarkers.clearTarget(level.getServer(), stack),
+                "The mod removes the target");
+        helper.assertTrue(io.github.nicolasgoyon.cartofold.api.PaperMapMarkers.target(level.getServer(), stack)
+                .isEmpty(), "The map has no target");
+        helper.succeed();
+    }
 }
