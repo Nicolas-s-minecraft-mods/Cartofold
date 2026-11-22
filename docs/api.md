@@ -177,6 +177,19 @@ PaperMapMarkers.register(PaperMarkerSource.of(
 - Cartofold has sources for the banners (the icons and the names of the vanilla banners) and for the lodestone (the pin `cartofold:waypoint`, `CartofoldMapDecorations.WAYPOINT`).
 - The vanilla maps keep the vanilla banners only.
 
+### Maps to a target
+
+A mod gives a survey map that points to one place, for example a treasure map that a cartographer sells:
+
+```java
+ItemStack map = PaperMapMarkers.targetMap(level, treasurePos, CartofoldMapDecorations.WAYPOINT,
+        Component.literal("Buried treasure"), 1);
+```
+
+- The target is at the center of the map, with a marker: its icon and its name. The item has the name "Map to Buried treasure", and its tooltip shows the name of the target.
+- The map has no land at first: the player sees the land when he explores it with the map in his hand. The table can update and move the map: a move keeps the target when the target stays in the area of the map.
+- The marker of the target has no block: the checks of the markers do not remove it. When the target is not valid any more (another player opened the treasure), the mod removes it with `PaperMapMarkers.clearTarget(server, stack)`. `PaperMapMarkers.target(server, stack)` gives the target of a map.
+
 ## Layers from the client
 
 A mod of the client can draw a layer itself, from data that the client has. Cartofold calls the renderer in each view that shows the layer, after the chunks.
