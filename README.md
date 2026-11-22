@@ -6,13 +6,13 @@
 
 **One map engine for the minimap, the world map, the paper maps and the maps of the other mods.**
 
-[![Build](https://img.shields.io/github/actions/workflow/status/nicolas-goyon/Cartofold/build.yml?branch=develop&label=build)](https://github.com/nicolas-goyon/Cartofold/actions/workflows/build.yml)
-[![Release](https://img.shields.io/github/v/release/nicolas-goyon/Cartofold?label=release)](https://github.com/nicolas-goyon/Cartofold/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/Nicolas-s-minecraft-mods/Cartofold/build.yml?branch=develop&label=build)](https://github.com/Nicolas-s-minecraft-mods/Cartofold/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/Nicolas-s-minecraft-mods/Cartofold?label=release)](https://github.com/Nicolas-s-minecraft-mods/Cartofold/releases/latest)
 [![Modrinth](https://img.shields.io/modrinth/dt/fmrNNS3n?logo=modrinth&label=modrinth)](https://modrinth.com/project/cartofold)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-795548)](https://nicolas-goyon.github.io/Cartofold/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-795548)](https://nicolas-s-minecraft-mods.github.io/Cartofold/)
 ![Minecraft 1.21.1](https://img.shields.io/badge/Minecraft-1.21.1-62B47A)
 ![NeoForge](https://img.shields.io/badge/NeoForge-21.1-E68C37)
-[![License: MIT](https://img.shields.io/github/license/nicolas-goyon/Cartofold)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/Nicolas-s-minecraft-mods/Cartofold)](LICENSE)
 
 </div>
 
@@ -27,10 +27,10 @@ Cartofold is a map mod for Minecraft (NeoForge). It needs no other mod. Install 
 
 | Read | For |
 | --- | --- |
-| [Player guide](https://nicolas-goyon.github.io/Cartofold/guide/install/) | Install, keys, maps and settings |
-| [API guide](https://nicolas-goyon.github.io/Cartofold/api/) | Use Cartofold in a mod |
-| [Architecture](https://nicolas-goyon.github.io/Cartofold/technical/architecture/) | Understand the code |
-| [Release notes](https://nicolas-goyon.github.io/Cartofold/release-notes/) | See the changes of each version |
+| [Player guide](https://nicolas-s-minecraft-mods.github.io/Cartofold/guide/install/) | Install, keys, maps and settings |
+| [API guide](https://nicolas-s-minecraft-mods.github.io/Cartofold/api/) | Use Cartofold in a mod |
+| [Architecture](https://nicolas-s-minecraft-mods.github.io/Cartofold/technical/architecture/) | Understand the code |
+| [Release notes](https://nicolas-s-minecraft-mods.github.io/Cartofold/release-notes/) | See the changes of each version |
 
 ## Contribute
 

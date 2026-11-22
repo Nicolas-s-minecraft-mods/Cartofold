@@ -13,7 +13,7 @@ HEADER = """# Release notes
 
 The versions of Cartofold, newest first. Each version is also on
 [Modrinth](https://modrinth.com/project/cartofold) and in the
-[GitHub Releases](https://github.com/nicolas-goyon/Cartofold/releases).
+[GitHub Releases](https://github.com/Nicolas-s-minecraft-mods/Cartofold/releases).
 """
 
 
