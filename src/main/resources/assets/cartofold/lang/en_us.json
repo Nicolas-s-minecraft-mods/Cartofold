@@ -108,6 +108,7 @@
   "item.cartofold.empty_survey_map": "Empty Survey Map",
   "item.cartofold.survey_map": "Survey Map",
   "item.cartofold.survey_map.numbered": "Survey Map #%s",
+  "item.cartofold.survey_map.target": "Map to %s",
   "cartofold.slice.surface": "Surface",
   "cartofold.slice.caves": "Caves: Y %s to %s",
   "cartofold.minimap.caves": "%s (caves)",
